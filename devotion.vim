@@ -3,17 +3,18 @@
 " Maintainer:   Masato Nishihata
 " License:      This file is placed in the public domain.
 
-if exists("g:loaded_mntrvims")
+if exists("g:loaded_devotion")
   finish
 endif
-let g:loaded_mntrvims = 1
+let g:loaded_devotion = 1
 
 let s:save_cpo = &cpo
 set cpo&vim
 
 " TODO: use XDG_CACHE_HOME?
-let s:log_file_name = expand("~/.cache/mntrvims.log")
-let s:result_file_name = expand("~/.cache/mntrvims.txt")
+" TODO: 年単位くらいでファイルを分ける？
+let s:log_file_name = expand("~/.cache/devotion.log")
+let s:result_file_name = expand("~/.cache/devotion.txt")
 
 let s:curr_target_file_name = ""
 
@@ -71,7 +72,7 @@ let s:total_focus_lost_time_for_insert_enter = 0
 " filetypeを見るのはだめだ。。<abuf>からバッファの情報を抜き出す必要がある
 " これで正解？ getbufvar(str2nr(expand("<abuf>")), "&filetype")
 
-augroup mntrvims
+augroup devotion
   autocmd!
   autocmd BufEnter *    call s:DevotionBufEnter()
   autocmd BufLeave *    call s:DevotionBufLeave()
@@ -96,7 +97,7 @@ endfunction
 
 function! s:DevotionBufEnter()
   if !s:IsVimBuffer() | return | endif
-  if s:monitoring_status != 0 | echoerr "mntrvims" | call writefile(["BufEnter Status Error", s:monitoring_status], s:log_file_name, "a") | endif
+  if s:monitoring_status != 0 | echoerr "devotion" | call writefile(["BufEnter Status Error", s:monitoring_status], s:log_file_name, "a") | endif
   call writefile(["BufEnter    @ " . localtime() . " for " . expand("<afile>:p")], s:log_file_name, "a")
   let s:monitoring_status = 1
   let s:buf_enter_timestamp = localtime()
@@ -105,11 +106,11 @@ endfunction
 
 function! s:DevotionBufLeave()
   if getbufvar(str2nr(expand("<abuf>")), "&filetype") ==# "vim" && expand("<afile>") ==# s:curr_target_file_name
-    if s:monitoring_status != 1 | echoerr "mntrvims" | call writefile(["BufLeave Status Error", s:monitoring_status], s:log_file_name, "a") | endif
+    if s:monitoring_status != 1 | echoerr "devotion" | call writefile(["BufLeave Status Error", s:monitoring_status], s:log_file_name, "a") | endif
     call writefile(["BufLeave    @ " . localtime() . " for " . expand("<afile>:p")], s:log_file_name, "a")
     let s:monitoring_status = 0
     let s:total_buf_enter_time += localtime() - s:buf_enter_timestamp - s:total_focus_lost_time_for_buf_enter
-    if s:total_buf_enter_time < 0 | echoerr "mntrvims" | call writefile(["BufLeave Time Error"], s:log_file_name, "a") | endif
+    if s:total_buf_enter_time < 0 | echoerr "devotion" | call writefile(["BufLeave Time Error"], s:log_file_name, "a") | endif
     call writefile([strftime("%c") . ", " . s:total_buf_enter_time . " [sec], Viewed " . expand("<afile>:p")], s:result_file_name, "a")
     call writefile(["  [debug] leave: " . localtime() . ", enter: " . s:buf_enter_timestamp . ", focus_lost: " . s:total_focus_lost_time_for_buf_enter], s:result_file_name, "a")
     let s:total_focus_lost_time_for_buf_enter = 0
@@ -119,14 +120,14 @@ endfunction
 
 function! s:DevotionBufUnload()
   if getbufvar(str2nr(expand("<abuf>")), "&filetype") ==# "vim" && expand("<afile>") ==# s:curr_target_file_name
-    if s:monitoring_status != 0 && s:monitoring_status != 1 | echoerr "mntrvims" | call writefile(["BufUnload Status Error", s:monitoring_status], s:log_file_name, "a") | endif
+    if s:monitoring_status != 0 && s:monitoring_status != 1 | echoerr "devotion" | call writefile(["BufUnload Status Error", s:monitoring_status], s:log_file_name, "a") | endif
     if s:monitoring_status == 0
       call writefile(["BufUnload   @ " . localtime() . " for " . expand("<afile>:p") . " (ignored)"], s:log_file_name, "a")
     elseif s:monitoring_status == 1
       call writefile(["BufUnload   @ " . localtime() . " for " . expand("<afile>:p")], s:log_file_name, "a")
       let s:monitoring_status = 0
       let s:total_buf_enter_time += localtime() - s:buf_enter_timestamp - s:total_focus_lost_time_for_buf_enter
-      if s:total_buf_enter_time < 0 | echoerr "mntrvims" | call writefile(["BufUnload Time Error"], s:log_file_name, "a") | endif
+      if s:total_buf_enter_time < 0 | echoerr "devotion" | call writefile(["BufUnload Time Error"], s:log_file_name, "a") | endif
       call writefile([strftime("%c") . ", " . s:total_buf_enter_time . " [sec], Viewed " . expand("<afile>:p")], s:result_file_name, "a")
       call writefile(["  [debug] leave: " . localtime() . ", enter: " . s:buf_enter_timestamp . ", focus_lost: " . s:total_focus_lost_time_for_buf_enter], s:result_file_name, "a")
       let s:total_focus_lost_time_for_buf_enter = 0
@@ -137,7 +138,7 @@ endfunction
 
 function! s:DevotionInsertEnter()
   if getbufvar(str2nr(expand("<abuf>")), "&filetype") ==# "vim" && expand("<afile>") ==# s:curr_target_file_name
-    if s:monitoring_status != 1 | echoerr "mntrvims" | call writefile(["InsertEnter Status Error", s:monitoring_status], s:log_file_name, "a") | endif
+    if s:monitoring_status != 1 | echoerr "devotion" | call writefile(["InsertEnter Status Error", s:monitoring_status], s:log_file_name, "a") | endif
     call writefile(["InsertEnter @ " . localtime() . " for " . expand("<afile>:p")], s:log_file_name, "a")
     let s:monitoring_status = 2
     let s:insert_enter_timestamp = localtime()
@@ -146,11 +147,11 @@ endfunction
 
 function! s:DevotionInsertLeave()
   if getbufvar(str2nr(expand("<abuf>")), "&filetype") ==# "vim" && expand("<afile>") ==# s:curr_target_file_name
-    if s:monitoring_status != 2 | echoerr "mntrvims" | call writefile(["InsertLeave Status Error", s:monitoring_status], s:log_file_name, "a") | endif
+    if s:monitoring_status != 2 | echoerr "devotion" | call writefile(["InsertLeave Status Error", s:monitoring_status], s:log_file_name, "a") | endif
     call writefile(["InsertLeave @ " . localtime() . " for " . expand("<afile>:p")], s:log_file_name, "a")
     let s:monitoring_status = 1
     let s:total_insert_enter_time += localtime() - s:insert_enter_timestamp - s:total_focus_lost_time_for_insert_enter
-    if s:total_insert_enter_time < 0 | echoerr "mntrvims" | call writefile(["InsertLeave Time Error"], s:log_file_name, "a") | endif
+    if s:total_insert_enter_time < 0 | echoerr "devotion" | call writefile(["InsertLeave Time Error"], s:log_file_name, "a") | endif
     call writefile([strftime("%c") . ", " . s:total_insert_enter_time . " [sec], Edited " . expand("<afile>:p")], s:result_file_name, "a")
     call writefile(["  [debug] leave: " . localtime() . ", enter: " . s:insert_enter_timestamp . ", focus_lost: " . s:total_focus_lost_time_for_insert_enter], s:result_file_name, "a")
     let s:total_focus_lost_time_for_insert_enter = 0
@@ -160,26 +161,26 @@ endfunction
 
 function! s:DevotionFocusGained()
   if getbufvar(str2nr(expand("<abuf>")), "&filetype") ==# "vim" && expand("<afile>") ==# s:curr_target_file_name
-    if s:focus_status != 0 | echoerr "mntrvims" | call writefile(["FocusGained Status Error 1", s:focus_status], s:log_file_name, "a") | endif
+    if s:focus_status != 0 | echoerr "devotion" | call writefile(["FocusGained Status Error 1", s:focus_status], s:log_file_name, "a") | endif
     let s:focus_status = 1
     call writefile(["FocusGained @ " . localtime() . " for " . expand("<afile>:p")], s:log_file_name, "a")
     if s:monitoring_status == 1
       let s:total_focus_lost_time_for_buf_enter += localtime() - s:focus_gained_timestamp
-      if s:total_focus_lost_time_for_buf_enter < 0 | echoerr "mntrvims" | call writefile(["FocusGained Time Error"], s:log_file_name, "a") | endif
+      if s:total_focus_lost_time_for_buf_enter < 0 | echoerr "devotion" | call writefile(["FocusGained Time Error"], s:log_file_name, "a") | endif
     elseif s:monitoring_status == 2
       let s:total_focus_lost_time_for_buf_enter += localtime() - s:focus_gained_timestamp
-      if s:total_focus_lost_time_for_buf_enter < 0 | echoerr "mntrvims" | call writefile(["FocusGained Time Error"], s:log_file_name, "a") | endif
+      if s:total_focus_lost_time_for_buf_enter < 0 | echoerr "devotion" | call writefile(["FocusGained Time Error"], s:log_file_name, "a") | endif
       let s:total_focus_lost_time_for_insert_enter += localtime() - s:focus_gained_timestamp
-      if s:total_focus_lost_time_for_insert_enter < 0 | echoerr "mntrvims" | call writefile(["FocusGained Time Error"], s:log_file_name, "a") | endif
+      if s:total_focus_lost_time_for_insert_enter < 0 | echoerr "devotion" | call writefile(["FocusGained Time Error"], s:log_file_name, "a") | endif
     else
-      echoerr "mntrvims" | call writefile(["FocusGained Status Error 2", s:monitoring_status], s:log_file_name, "a")
+      echoerr "devotion" | call writefile(["FocusGained Status Error 2", s:monitoring_status], s:log_file_name, "a")
     endif
   endif
 endfunction
 
 function! s:DevotionFocusLost()
   if getbufvar(str2nr(expand("<abuf>")), "&filetype") ==# "vim" && expand("<afile>") ==# s:curr_target_file_name
-    if s:focus_status != 1 | echoerr "mntrvims" | call writefile(["FocusLost Status Error", s:focus_status], s:log_file_name, "a") | endif
+    if s:focus_status != 1 | echoerr "devotion" | call writefile(["FocusLost Status Error", s:focus_status], s:log_file_name, "a") | endif
     let s:focus_status = 0
     call writefile(["FocusLost   @ " . localtime() . " for " . expand("<afile>:p")], s:log_file_name, "a")
     let s:focus_gained_timestamp = localtime()
@@ -203,6 +204,9 @@ endfunction
 " ファイルが無かったら list を追加
 " その後各数値を増やす -> string ではなくて int のほうがいいだろう
 " ファイルの開き方は、ctrlp の mru が参考になるかも
+" :DevotionRange
+" :DevotionLastDay (前日ではなく、最終使用日がいいかも)
+" :DevotionLastWeek
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
