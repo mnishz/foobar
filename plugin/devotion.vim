@@ -66,6 +66,8 @@ let s:insert_focus_lost_time = 0
 " TODO: 経過時間が 0 なら省略
 " TODO: 同一ファイルかどうかのチェックも入れる
 " TODO: ファイル名があるもののみに絞る
+" TODO: help ファイルもやる、viewと、翻訳用のedit
+" TODO: autoload 化
 " すぐに解決するのが難しい問題はTODOとしてGitHubに書いておいてよいかもしれない
 
 " vim ファイルを開いて、他のファイルに移動した上で :qa すると
