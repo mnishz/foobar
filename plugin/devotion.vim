@@ -11,7 +11,7 @@ let g:loaded_devotion = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
-let s:DEBUG_MODE = v:true | lockvar! s:DEBUG_MODE
+" let s:DEBUG_MODE = v:true | lockvar! s:DEBUG_MODE
 
 " TODO: use XDG_CACHE_HOME?
 " TODO: 年単位くらいでファイルを分ける？
@@ -19,20 +19,6 @@ let s:log_file_name = expand("~/.cache/devotion.log")
 let s:result_file_name = expand("~/.cache/devotion.txt")
 
 let s:target_file_name = ""
-
-let s:NOT_MONITORING =    0 | lockvar! s:NOT_MONITORING
-let s:MONITORING =        1 | lockvar! s:MONITORING
-let s:MONITORING_INSERT = 2 | lockvar! s:MONITORING_INSERT
-
-let s:monitoring_status = s:NOT_MONITORING
-let s:has_focus = v:true
-
-let s:buf_enter_time = 0
-let s:insert_enter_time = 0
-let s:focus_lost_time = 0
-
-let s:buf_focus_lost_time = 0
-let s:insert_focus_lost_time = 0
 
 " assumption
 "
@@ -78,104 +64,14 @@ let s:insert_focus_lost_time = 0
 
 augroup devotion
   autocmd!
-  autocmd BufEnter *    if s:IsVimBuffer() | call s:DevotionBufEnter()    | endif
-  autocmd BufLeave *    if s:IsVimBuffer() | call s:DevotionBufLeave()    | endif
-  autocmd BufUnload *   if s:IsVimBuffer() | call s:DevotionBufUnload()   | endif
-  autocmd InsertEnter * if s:IsVimBuffer() | call s:DevotionInsertEnter() | endif
-  autocmd InsertLeave * if s:IsVimBuffer() | call s:DevotionInsertLeave() | endif
-  autocmd FocusLost *   if s:IsVimBuffer() | call s:DevotionFocusLost()   | endif
-  autocmd FocusGained * if s:IsVimBuffer() | call s:DevotionFocusGained() | endif
+  autocmd BufEnter *    if devotion#IsTargetBuffer() | call devotion#BufEnter()    | endif
+  autocmd BufLeave *    if devotion#IsTargetBuffer() | call devotion#BufLeave()    | endif
+  autocmd BufUnload *   if devotion#IsTargetBuffer() | call devotion#BufUnload()   | endif
+  autocmd InsertEnter * if devotion#IsTargetBuffer() | call devotion#InsertEnter() | endif
+  autocmd InsertLeave * if devotion#IsTargetBuffer() | call devotion#InsertLeave() | endif
+  autocmd FocusLost *   if devotion#IsTargetBuffer() | call devotion#FocusLost()   | endif
+  autocmd FocusGained * if devotion#IsTargetBuffer() | call devotion#FocusGained() | endif
 augroup END
-
-" utilities
-
-function! s:IsVimBuffer()
-  if getbufvar(str2nr(expand("<abuf>")), "&filetype") ==# "vim"
-    return v:true
-  else
-    return v:false
-  endif
-endfunction
-
-function! s:GetBufferFileName()
-  return expand("<afile>:p")
-endfunction
-
-function! s:IsTargetFile(buffer_file_name)
-  if s:target_file_name ==# a:buffer_file_name
-    return v:true
-  else
-    call s:LogFileError(buffer_file_name)
-    return v:false
-  endif
-endfunction
-
-function! s:CalcElapsedTime(buf_leave_time)
-  let l:elapsed_time = a:buf_leave_time - s:buf_enter_time - s:total_focus_lost_time_for_buf_enter
-  if l:elapsed_time < 0 | call s:LogTimeError() | endif
-  if s:DEBUG_MODE | call writefile(["  debug info, " . s:buf_enter_time . ", " . s:total_focus_lost_time_for_buf_enter], s:result_file_name, "a") | endif
-  return l:elapsed_time
-endfunction
-
-function! s:ClearBufElapsedParam()
-  let s:buf_enter_time = 0
-  let s:total_focus_lost_time_for_buf_enter = 0
-endfunction
-
-function! s:LogBufElapsedTime(curr_time, elapsed_time, file_name)
-  call writefile([a:curr_time . ", " . a:elapsed_time . "sec, Viewed " . a:file_name], s:result_file_name, "a")
-endfunction
-
-function! s:CalcInsertElapsedTime(insert_leave_time)
-  let l:elapsed_time = a:insert_leave_time - s:insert_enter_time - s:total_focus_lost_time_for_insert_enter
-  if l:elapsed_time < 0 | call s:LogTimeError() | endif
-  if s:DEBUG_MODE | call writefile(["  debug info, " . s:insert_enter_time . ", " . s:total_focus_lost_time_for_insert_enter], s:result_file_name, "a") | endif
-  return l:elapsed_time
-endfunction
-
-function! s:ClearInsertElapsedParam()
-  let s:insert_enter_time = 0
-  let s:total_focus_lost_time_for_insert_enter = 0
-endfunction
-
-function! s:LogInsertElapsedTime(curr_time, elapsed_time, file_name)
-  call writefile([a:curr_time . ", " . a:elapsed_time . "sec, Edited " . a:file_name], s:result_file_name, "a")
-endfunction
-
-" utilities for debug
-
-function! s:LogEventTime(event_name, curr_time, file_name)
-  if s:DEBUG_MODE
-    call writefile([a:event_name . " @ " . a:curr_time . " for " . a:file_name], s:log_file_name, "a")
-  endif
-endfunction
-
-function! s:LogFileError(file_name)
-  if s:DEBUG_MODE
-    echoerr "devotion file error"
-    call writefile(["file error, target: " . s:target_file_name . ", actual: " . a:file_name], s:log_file_name, "a")
-  endif
-endfunction
-
-function! s:LogStatusError()
-  if s:DEBUG_MODE
-    echoerr "devotion status error"
-    call writefile(["status error, monitoring_status: " . s:monitoring_status . ", has_focus: " . s:has_focus], s:log_file_name, "a")
-  endif
-endfunction
-
-function! s:LogBufLeaveUnloadEvent()
-  if s:DEBUG_MODE
-    call writefile(["  BufLeave -> BufUnload, ignored"], s:log_file_name, "a")
-  endif
-endfunction
-
-function! s:LogTimeError()
-  if s:DEBUG_MODE
-    echoerr "devotion time error"
-    call writefile(["time error"], a:log_file_name, "a")
-  endif
-endfunction
 
 " autocmd functions
 
