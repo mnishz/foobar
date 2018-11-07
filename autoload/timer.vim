@@ -6,35 +6,39 @@
 " call fooTimer.Stop()
 " echo fooTimer.GetElapsedTime()
 
-" BufEnter viewTimer.Initialize()/viewTimer.Start()
+" BufEnter view_timer_.Initialize()/Start()
 " |
-" | FocusLost viewTimer.Stop()
+" | FocusLost view_timer_.Stop()
 " x |
 " x V
-" | FocusGained viewTimer.Start()
+" | FocusGained view_timer_.Start()
 " |
-" | InsertEnter viewTimer.Stop() / editTimer.Initialize()/editTimer.Start()
+" | InsertEnter view_timer_.Stop()
+" x |           edit_timer_.Initialize()/Start()
 " x |
-" x | FocusLost editTimer.Stop()
+" x | FocusLost edit_timer_.Stop()
 " x x |
 " x x V
-" x | FocusGained editTimer.Start()
+" x | FocusGained edit_timer_.Start()
 " x V
-" | InsertLeave editTimer.Stop()/editTimer.GetElapsedTime()/editTimer.Clear() / viewTimer.Start()
+" | InsertLeave edit_timer_.Stop()/GetElapsedTime()/Clear()
+" |             view_timer_.Start()
 " V
-" BufLeave/BufUnload viewTimer.Stop()/viewTimer.GetElapsedTime()/viewTimer.Clear()
+" BufLeave/BufUnload view_timer_.Stop()/GetElapsedTime()/Clear()
 
 unlockvar g:timer#Timer
 
 let g:timer#Timer = {
+      \ 'mode': '',
       \ 'file_name': '',
       \ 'started_time': [],
       \ 'elapsed_time': 0.0,
-      \ 'is_stopped': v:true,
+      \ 'is_started': v:false,
       \ }
 
-function! g:timer#Timer.New() abort
+function! g:timer#Timer.New(mode) abort
   let l:timer = copy(self)
+  let self.mode = a:mode
   return l:timer
 endfunction
 
@@ -47,35 +51,61 @@ function! g:timer#Timer.Initialize(file_name) abort
 endfunction
 
 function! g:timer#Timer.Start() abort
-  if empty(self.file_name) || !self.is_stopped
+  if self.IsSameFileName()
     " unexpected
-  else
-    let self.started_time = reltime()
-    let self.is_stopped = v:false
+    let self.file_name = devotion#GetBufferFileName()
+  elseif self.is_started
+    " unexpected
   endif
+  " continue regardless of error for Start()
+  let self.started_time = reltime()
+  let self.is_started = v:true
 endfunction
 
 function! g:timer#Timer.Stop() abort
-  if empty(self.file_name) || self.is_stopped
+  if self.IsSameFileName() || !self.is_started
     " unexpected
   else
+    " add only in normal case in contrast to Start()
     let self.elapsed_time += reltimefloat(reltime(self.started_time))
-    let self.is_stopped = v:true
+    let self.is_started = v:false
   endif
 endfunction
 
+function! g:timer#Timer.GetMode() abort
+  return self.mode
+endfunction
+
+function! g:timer#Timer.GetFileName() abort
+  return self.file_name
+endfunction
+
 function! g:timer#Timer.GetElapsedTime() abort
-  if empty(self.file_name) || !self.is_stopped
+  if self.IsSameFileName()
     " unexpected
   else
+    if self.is_started
+      " unexpected
+    endif
     return self.elapsed_time
   endif
 endfunction
 
 function! g:timer#Timer.Clear() abort
+  if self.is_started
+    " unexpected
+  endif
   let self.file_name = ''
   let self.elapsed_time = 0.0
-  let self.is_stopped = v:true
+  let self.is_started = v:false
+endfunction
+
+function! g:timer#Timer.IsSameFileName() abort
+  if !empty(self.file_name) && self.file_name ==# devotion#GetBufferFileName()
+    return v:true
+  else
+    return v:false
+  endif
 endfunction
 
 lockvar g:timer#Timer
