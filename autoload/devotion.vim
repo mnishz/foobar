@@ -73,6 +73,8 @@ function! g:devotion#BufUnload() abort
   "     BufEnter -> BufLeave -> BufUnload
   "     BufEnter -> BufUnload
   " workaround: check the file name and log if not empty
+  " ÇªÇÍÇ© cleared ÇÃ state Çí«â¡Ç∑ÇÈÅBBufLeave ÇÃå„ÇµÇ© cleared Ç…Ç»ÇÁÇ»Ç¢ÇÊ
+  " Ç§Ç…Ç∑ÇÈÅB
   if !empty(g:devotion#view_timer_.GetFileName())
     call g:devotion#view_timer_.Stop()
     call g:devotion#log#Log.LogElapsedTime(g:devotion#view_timer_)

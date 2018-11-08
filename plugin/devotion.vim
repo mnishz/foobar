@@ -17,6 +17,10 @@ set cpo&vim
 " TODO: release前にdebugを落とす
 " すぐに解決するのが難しい問題はTODOとしてGitHubに書いておいてよいかもしれない
 
+" 日本語は下のほうにあると書いて、英語 -> 日本語の順に書く
+" pure Vim script
+" 不自然な言葉遣いや表現があったら教えてね
+
 " :DevotionRange
 " :DevotionToday
 " :DevotionLastDay (前日ではなく、最終使用日がいいかも)

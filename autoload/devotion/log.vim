@@ -29,11 +29,12 @@ endfunction
 
 " function! s:TimeBinarySearch(log, time) abort
 function! g:devotion#log#Log.TimeBinarySearch(log, time) abort
-  " less: -1, more: -2
+  " under: -1, over: -2
   " 2018/01/01 の分を出力する例 (start < stop の条件要確認)
   " 20180101000000 と 20180102000000 で受け取って、後ろを -1 して
-  " 20180101235959 で探す。どちらかが範囲内にあれば出力する必要がある。
-  " そのときに -1 があった場合は 0 に、 -2 があった場合は N-1 に切り詰める。
+  " 20180101235959 で探す。どちらかが範囲内にあるか、under && over のときに出
+  " 力するものがある。そのときに -1 があった場合は 0 に、-2 があった場合は N-1
+  " に書き換える。
   " for (int i = min; (i <= max): ++i) まで足しこむ。
   if eval(a:log[0]).t > a:time | return -1 | endif
   if eval(a:log[-1]).t < a:time | return -2 | endif
