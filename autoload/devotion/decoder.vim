@@ -55,7 +55,7 @@ function! s:AddUpAndShowElapsedTime(start_time_num, stop_time_num) abort
     endfor
     if l:same_file_idx == l:NOT_FOUND
       " TODO: ƒNƒ‰ƒX‚É‰Šú‰»ŠÖ”‚ğì‚è‚½‚¢AŠg’£«‚Ì‚½‚ß
-      let l:elapsed_time_list += [{'file': l:log_dict.f, 'filetype': l:log_dict.ft, 'v': 0.0, 'e': 0.0}]
+      let l:elapsed_time_list += [{'file': l:log_dict.f, 'filetype': l:log_dict.ft, 'view': 0.0, 'edit': 0.0}]
       let l:same_file_idx = -1  " assume it to be the last one
     endif
     let l:elapsed_time_list[l:same_file_idx][l:log_dict.m] += l:log_dict.e

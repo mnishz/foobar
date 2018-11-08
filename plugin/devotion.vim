@@ -15,10 +15,10 @@ set cpo&vim
 
 " TODO: use XDG_CACHE_HOME?
 " TODO: 年単位くらいでファイルを分ける？
-let s:log_file_name = expand("~/.cache/devotion.log")
-let s:result_file_name = expand("~/.cache/devotion.txt")
+" let s:log_file_name = expand("~/.cache/devotion.log")
+" let s:result_file_name = expand("~/.cache/devotion.txt")
 
-let s:target_file_name = ""
+" let s:target_file_name = ""
 
 " assumption
 "
@@ -75,125 +75,125 @@ augroup END
 
 " autocmd functions
 
-function! s:DevotionBufEnter()
-  let l:buffer_file_name = s:GetBufferFileName()
-  let l:time = localtime()
-  call s:LogEventTime("BufEnter", l:time, l:buffer_file_name)
-
-  " continue even if the status is not expected one because this is the beginning of everything
-  if s:monitoring_status != s:NOT_MONITORING | call s:LogStatusError() | endif
-
-  let s:monitoring_status = s:MONITORING
-  let s:buf_enter_time = l:time
-  let s:target_file_name = l:buffer_file_name
-endfunction
-
-function! s:DevotionBufLeave()
-  let l:buffer_file_name = s:GetBufferFileName()
-  let l:time = localtime()
-  call s:LogEventTime("BufLeave", l:time, l:buffer_file_name)
-
-  " return in case of error because elapsed time cannot be calculated
-  if s:monitoring_status != s:MONITORING | call s:LogStatusError() | return | endif
-  if !s:IsTargetFile(l:buffer_file_name) | return | endif
-
-  let s:monitoring_status = s:NOT_MONITORING
-  let l:elapsed_time = s:CalcBufElapsedTime(l:time)
-  call s:LogBufElapsedTime(l:time, l:elapsed_time, l:buffer_file_name)
-  call s:ClearBufElapsedParam()
-endfunction
-
-function! s:DevotionBufUnload()
-  let l:buffer_file_name = s:GetBufferFileName()
-  let l:time = localtime()
-  call s:LogEventTime("BufUnload", l:time, l:buffer_file_name)
-
-  " BufLeave -> BufUnload can be happen (e.g. :tabnew -> :qa), just log and return
-  if s:monitoring_status == s:NOT_MONITORING | call s:LogBufLeaveUnloadEvent() | return | endif
-  " return in case of error because elapsed time cannot be calculated
-  if s:monitoring_status != s:MONITORING | call s:LogStatusError() | return | endif
-  if !s:IsTargetFile(l:buffer_file_name) | return | endif
-
-  let s:monitoring_status = s:NOT_MONITORING
-  let l:elapsed_time = s:CalcBufElapsedTime(l:time)
-  call s:LogBufElapsedTime(l:time, l:elapsed_time, l:buffer_file_name)
-  call s:ClearBufElapsedParam()
-endfunction
-
-function! s:DevotionInsertEnter()
-  let l:buffer_file_name = s:GetBufferFileName()
-  let l:time = localtime()
-  call s:LogEventTime("InsertEnter", l:time, l:buffer_file_name)
-
-  " return in case of error because elapsed time cannot be calculated
-  if s:monitoring_status != s:MONITORING | call s:LogStatusError() | return | endif
-  if !s:IsTargetFile(l:buffer_file_name) | return | endif
-
-  let s:monitoring_status = s:MONITORING_INSERT
-  let s:insert_enter_time = l:time
-endfunction
-
-function! s:DevotionInsertLeave()
-  let l:buffer_file_name = s:GetBufferFileName()
-  let l:time = localtime()
-  call s:LogEventTime("InsertLeave", l:time, l:buffer_file_name)
-
-  " return in case of error because elapsed time cannot be calculated
-  if s:monitoring_status != s:MONITORING_INSERT | call s:LogStatusError() | return | endif
-  if !s:IsTargetFile(l:buffer_file_name) | return | endif
-
-  let s:monitoring_status = s:MONITORING
-  let l:elapsed_time = s:CalcInsertElapsedTime(l:time)
-  call s:LogInsertElapsedTime(l:time, l:elapsed_time, l:buffer_file_name)
-  call s:ClearInsertElapsedParam()
-endfunction
-
-function! s:DevotionFocusLost()
-  let l:buffer_file_name = s:GetBufferFileName()
-  let l:time = localtime()
-  call s:LogEventTime("FocusLost", l:time, l:buffer_file_name)
-
-  " return in case of error because elapsed time cannot be calculated
-  if !s:IsTargetFile(l:buffer_file_name) | return | endif
-  " continue even if the status is not expected one because this is the beginning of FocusLost
-  if !s:has_focus | call s:LogStatusError() | endif
-
-  let s:has_focus = v:false
-  let s:focus_lost_time = l:time
-endfunction
-
-function! s:DevotionFocusGained()
-  let l:buffer_file_name = s:GetBufferFileName()
-  let l:time = localtime()
-  call s:LogEventTime("FocusGained", l:time, l:buffer_file_name)
-
-  " return in case of error because elapsed time cannot be calculated
-  if s:has_focus | call s:LogStatusError() | return | endif
-  if !s:IsTargetFile(l:buffer_file_name) | return | endif
-
-  if s:monitoring_status == s:MONITORING
-    let s:buf_focus_lost_time += l:time() - s:focus_lost_time
-  elseif s:monitoring_status == s:MONITORING_INSERT
-  else
-  endif
-
-  if getbufvar(str2nr(expand("<abuf>")), "&filetype") ==# "vim" && expand("<afile>") ==# s:target_file_name
-    if s:focus_status != 0 | echoerr "devotion" | call writefile(["FocusGained Status Error 1", s:focus_status], s:log_file_name, "a") | endif
-    let s:focus_status = 1
-    call writefile(["FocusGained @ " . localtime() . " for " . expand("<afile>:p")], s:log_file_name, "a")
-    if s:monitoring_status == 1
-      let s:total_focus_lost_time_for_buf_enter += localtime() - s:focus_gained_timestamp
-      if s:total_focus_lost_time_for_buf_enter < 0 | echoerr "devotion" | call writefile(["FocusGained Time Error"], s:log_file_name, "a") | endif
-    elseif s:monitoring_status == 2
-      let s:total_focus_lost_time_for_buf_enter += localtime() - s:focus_gained_timestamp
-      if s:total_focus_lost_time_for_buf_enter < 0 | echoerr "devotion" | call writefile(["FocusGained Time Error"], s:log_file_name, "a") | endif
-      let s:total_focus_lost_time_for_insert_enter += localtime() - s:focus_gained_timestamp
-      if s:total_focus_lost_time_for_insert_enter < 0 | echoerr "devotion" | call writefile(["FocusGained Time Error"], s:log_file_name, "a") | endif
-    else
-      echoerr "devotion" | call writefile(["FocusGained Status Error 2", s:monitoring_status], s:log_file_name, "a")
-    endif
-  endif
-endfunction
+" function! s:DevotionBufEnter()
+"   let l:buffer_file_name = s:GetBufferFileName()
+"   let l:time = localtime()
+"   call s:LogEventTime("BufEnter", l:time, l:buffer_file_name)
+" 
+"   " continue even if the status is not expected one because this is the beginning of everything
+"   if s:monitoring_status != s:NOT_MONITORING | call s:LogStatusError() | endif
+" 
+"   let s:monitoring_status = s:MONITORING
+"   let s:buf_enter_time = l:time
+"   let s:target_file_name = l:buffer_file_name
+" endfunction
+" 
+" function! s:DevotionBufLeave()
+"   let l:buffer_file_name = s:GetBufferFileName()
+"   let l:time = localtime()
+"   call s:LogEventTime("BufLeave", l:time, l:buffer_file_name)
+" 
+"   " return in case of error because elapsed time cannot be calculated
+"   if s:monitoring_status != s:MONITORING | call s:LogStatusError() | return | endif
+"   if !s:IsTargetFile(l:buffer_file_name) | return | endif
+" 
+"   let s:monitoring_status = s:NOT_MONITORING
+"   let l:elapsed_time = s:CalcBufElapsedTime(l:time)
+"   call s:LogBufElapsedTime(l:time, l:elapsed_time, l:buffer_file_name)
+"   call s:ClearBufElapsedParam()
+" endfunction
+" 
+" function! s:DevotionBufUnload()
+"   let l:buffer_file_name = s:GetBufferFileName()
+"   let l:time = localtime()
+"   call s:LogEventTime("BufUnload", l:time, l:buffer_file_name)
+" 
+"   " BufLeave -> BufUnload can be happen (e.g. :tabnew -> :qa), just log and return
+"   if s:monitoring_status == s:NOT_MONITORING | call s:LogBufLeaveUnloadEvent() | return | endif
+"   " return in case of error because elapsed time cannot be calculated
+"   if s:monitoring_status != s:MONITORING | call s:LogStatusError() | return | endif
+"   if !s:IsTargetFile(l:buffer_file_name) | return | endif
+" 
+"   let s:monitoring_status = s:NOT_MONITORING
+"   let l:elapsed_time = s:CalcBufElapsedTime(l:time)
+"   call s:LogBufElapsedTime(l:time, l:elapsed_time, l:buffer_file_name)
+"   call s:ClearBufElapsedParam()
+" endfunction
+" 
+" function! s:DevotionInsertEnter()
+"   let l:buffer_file_name = s:GetBufferFileName()
+"   let l:time = localtime()
+"   call s:LogEventTime("InsertEnter", l:time, l:buffer_file_name)
+" 
+"   " return in case of error because elapsed time cannot be calculated
+"   if s:monitoring_status != s:MONITORING | call s:LogStatusError() | return | endif
+"   if !s:IsTargetFile(l:buffer_file_name) | return | endif
+" 
+"   let s:monitoring_status = s:MONITORING_INSERT
+"   let s:insert_enter_time = l:time
+" endfunction
+" 
+" function! s:DevotionInsertLeave()
+"   let l:buffer_file_name = s:GetBufferFileName()
+"   let l:time = localtime()
+"   call s:LogEventTime("InsertLeave", l:time, l:buffer_file_name)
+" 
+"   " return in case of error because elapsed time cannot be calculated
+"   if s:monitoring_status != s:MONITORING_INSERT | call s:LogStatusError() | return | endif
+"   if !s:IsTargetFile(l:buffer_file_name) | return | endif
+" 
+"   let s:monitoring_status = s:MONITORING
+"   let l:elapsed_time = s:CalcInsertElapsedTime(l:time)
+"   call s:LogInsertElapsedTime(l:time, l:elapsed_time, l:buffer_file_name)
+"   call s:ClearInsertElapsedParam()
+" endfunction
+" 
+" function! s:DevotionFocusLost()
+"   let l:buffer_file_name = s:GetBufferFileName()
+"   let l:time = localtime()
+"   call s:LogEventTime("FocusLost", l:time, l:buffer_file_name)
+" 
+"   " return in case of error because elapsed time cannot be calculated
+"   if !s:IsTargetFile(l:buffer_file_name) | return | endif
+"   " continue even if the status is not expected one because this is the beginning of FocusLost
+"   if !s:has_focus | call s:LogStatusError() | endif
+" 
+"   let s:has_focus = v:false
+"   let s:focus_lost_time = l:time
+" endfunction
+" 
+" function! s:DevotionFocusGained()
+"   let l:buffer_file_name = s:GetBufferFileName()
+"   let l:time = localtime()
+"   call s:LogEventTime("FocusGained", l:time, l:buffer_file_name)
+" 
+"   " return in case of error because elapsed time cannot be calculated
+"   if s:has_focus | call s:LogStatusError() | return | endif
+"   if !s:IsTargetFile(l:buffer_file_name) | return | endif
+" 
+"   if s:monitoring_status == s:MONITORING
+"     let s:buf_focus_lost_time += l:time() - s:focus_lost_time
+"   elseif s:monitoring_status == s:MONITORING_INSERT
+"   else
+"   endif
+" 
+"   if getbufvar(str2nr(expand("<abuf>")), "&filetype") ==# "vim" && expand("<afile>") ==# s:target_file_name
+"     if s:focus_status != 0 | echoerr "devotion" | call writefile(["FocusGained Status Error 1", s:focus_status], s:log_file_name, "a") | endif
+"     let s:focus_status = 1
+"     call writefile(["FocusGained @ " . localtime() . " for " . expand("<afile>:p")], s:log_file_name, "a")
+"     if s:monitoring_status == 1
+"       let s:total_focus_lost_time_for_buf_enter += localtime() - s:focus_gained_timestamp
+"       if s:total_focus_lost_time_for_buf_enter < 0 | echoerr "devotion" | call writefile(["FocusGained Time Error"], s:log_file_name, "a") | endif
+"     elseif s:monitoring_status == 2
+"       let s:total_focus_lost_time_for_buf_enter += localtime() - s:focus_gained_timestamp
+"       if s:total_focus_lost_time_for_buf_enter < 0 | echoerr "devotion" | call writefile(["FocusGained Time Error"], s:log_file_name, "a") | endif
+"       let s:total_focus_lost_time_for_insert_enter += localtime() - s:focus_gained_timestamp
+"       if s:total_focus_lost_time_for_insert_enter < 0 | echoerr "devotion" | call writefile(["FocusGained Time Error"], s:log_file_name, "a") | endif
+"     else
+"       echoerr "devotion" | call writefile(["FocusGained Status Error 2", s:monitoring_status], s:log_file_name, "a")
+"     endif
+"   endif
+" endfunction
 
 " 結果は辞書のリストで持つのがいい感じかな
 " [

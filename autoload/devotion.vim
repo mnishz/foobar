@@ -32,31 +32,66 @@ function! g:devotion#IsTargetFileType() abort
 endfunction
 
 " autocmd functions
+"
+" view_timer_  autocmd event       edit_timer_
+"
+" Initialize   BufEnter            Initialize
+" Start
+"  |
+" Suspend      FocusLost
+"  *
+" Restart      FocusGained
+"  |
+" Stop         InsertEnter         Start
+"                                   |
+"              FocusLost           Suspend
+"                                   *
+"              FocusGained         Restart
+"                                   |
+" Start        EnsertLeave         Stop
+"  |
+" Stop         BufLeave/BufUnload
 
 function! g:devotion#BufEnter() abort
+  " debug用log書き出し、位置要検討
   call g:devotion#view_timer_.Initialize(devotion#GetEventBufferFileName())
   call g:devotion#view_timer_.Start()
-  " debug用logを書き出してくれる人を呼ぶ
+  call g:devotion#edit_timer_.Initialize(devotion#GetEventBufferFileName())
 endfunction
 
 function! g:devotion#BufLeave() abort
+  " debug用log書き出し、位置要検討
   call g:devotion#view_timer_.Stop()
-  " debug用logを書き出してくれる人を呼ぶ
   call g:devotion#log#Log.LogElapsedTime(g:devotion#view_timer_)
+  call g:devotion#log#Log.LogElapsedTime(g:devotion#edit_timer_)
   call g:devotion#view_timer_.Clear()
+  call g:devotion#edit_timer_.Clear()
 endfunction
 
 function! g:devotion#BufUnload() abort
+  call g:devotion#BufLeave()
 endfunction
 
 function! g:devotion#InsertEnter() abort
+  " debug用log書き出し、位置要検討
+  call g:devotion#view_timer_.Stop()
+  call g:devotion#edit_timer_.Start()
 endfunction
 
 function! g:devotion#InsertLeave() abort
+  " debug用log書き出し、位置要検討
+  call g:devotion#view_timer_.Start()
+  call g:devotion#edit_timer_.Stop()
 endfunction
 
 function! g:devotion#FocusLost() abort
+  " debug用log書き出し、位置要検討
+  call g:devotion#view_timer_.SuspendIfNeeded()
+  call g:devotion#edit_timer_.SuspendIfNeeded()
 endfunction
 
 function! g:devotion#FocusGained() abort
+  " debug用log書き出し、位置要検討
+  call g:devotion#view_timer_.RestartIfNeeded()
+  call g:devotion#edit_timer_.RestartIfNeeded()
 endfunction
