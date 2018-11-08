@@ -1,5 +1,6 @@
 " constants
 
+let s:STATE_CLEARED = 'cleared'
 let s:STATE_NOT_STARTED = 'not_started'
 let s:STATE_STARTED = 'started'
 let s:STATE_SUSPENDED = 'suspended'
@@ -28,6 +29,7 @@ function! g:devotion#timer#Timer.Initialize(file_name) abort
     call g:devotion#log#Log.LogUnexpectedState()
   endif
   call self.Clear()
+  let self.state = s:STATE_NOT_STARTED
   let self.file_name = a:file_name
 endfunction
 
@@ -38,7 +40,7 @@ function! g:devotion#timer#Timer.Clear() abort
   endif
   let self.file_name = ''
   let self.elapsed_time = 0.0
-  let self.state = s:STATE_NOT_STARTED
+  let self.state = s:STATE_CLEARED
 endfunction
 
 function! g:devotion#timer#Timer.Start() abort
@@ -120,6 +122,10 @@ endfunction
 
 function! g:devotion#timer#Timer.GetState() abort
   return self.state
+endfunction
+
+function! g:devotion#timer#Timer.IsCleared() abort
+  return (self.state ==# s:STATE_CLEARED) ? v:true : v:false
 endfunction
 
 function! g:devotion#timer#Timer.CalcAndAddElapsedTime() abort
