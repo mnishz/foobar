@@ -3,7 +3,7 @@
 " Maintainer:   Masato Nishihata
 " License:      This file is placed in the public domain.
 
-if exists("g:loaded_devotion")
+if exists('g:loaded_devotion')
   finish
 endif
 let g:loaded_devotion = 1
