@@ -64,13 +64,13 @@ let s:target_file_name = ""
 
 augroup devotion
   autocmd!
-  autocmd BufEnter *    if devotion#IsTargetBuffer() | call devotion#BufEnter()    | endif
-  autocmd BufLeave *    if devotion#IsTargetBuffer() | call devotion#BufLeave()    | endif
-  autocmd BufUnload *   if devotion#IsTargetBuffer() | call devotion#BufUnload()   | endif
-  autocmd InsertEnter * if devotion#IsTargetBuffer() | call devotion#InsertEnter() | endif
-  autocmd InsertLeave * if devotion#IsTargetBuffer() | call devotion#InsertLeave() | endif
-  autocmd FocusLost *   if devotion#IsTargetBuffer() | call devotion#FocusLost()   | endif
-  autocmd FocusGained * if devotion#IsTargetBuffer() | call devotion#FocusGained() | endif
+  autocmd BufEnter *    if g:devotion#IsTargetFileType() | call g:devotion#BufEnter()    | endif
+  autocmd BufLeave *    if g:devotion#IsTargetFileType() | call g:devotion#BufLeave()    | endif
+  autocmd BufUnload *   if g:devotion#IsTargetFileType() | call g:devotion#BufUnload()   | endif
+  autocmd InsertEnter * if g:devotion#IsTargetFileType() | call g:devotion#InsertEnter() | endif
+  autocmd InsertLeave * if g:devotion#IsTargetFileType() | call g:devotion#InsertLeave() | endif
+  autocmd FocusLost *   if g:devotion#IsTargetFileType() | call g:devotion#FocusLost()   | endif
+  autocmd FocusGained * if g:devotion#IsTargetFileType() | call g:devotion#FocusGained() | endif
 augroup END
 
 " autocmd functions

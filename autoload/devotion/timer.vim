@@ -1,5 +1,5 @@
 " how to use
-" let fooTimer = g:timer#Timer.New()
+" let fooTimer = g:devotion#timer#Timer.New()
 " call fooTimer.Initialize('hogehoge.vim')
 " call fooTimer.Start()
 " sleep 3
@@ -26,9 +26,9 @@
 " V
 " BufLeave/BufUnload view_timer_.Stop()/GetElapsedTime()/Clear()
 
-unlockvar g:timer#Timer
+unlockvar g:devotion#timer#Timer
 
-let g:timer#Timer = {
+let g:devotion#timer#Timer = {
       \ 'mode': '',
       \ 'file_name': '',
       \ 'started_time': [],
@@ -36,13 +36,13 @@ let g:timer#Timer = {
       \ 'is_started': v:false,
       \ }
 
-function! g:timer#Timer.New(mode) abort
+function! g:devotion#timer#Timer.New(mode) abort
   let l:timer = copy(self)
-  let self.mode = a:mode
+  let l:timer.mode = a:mode
   return l:timer
 endfunction
 
-function! g:timer#Timer.Initialize(file_name) abort
+function! g:devotion#timer#Timer.Initialize(file_name) abort
   if !empty(self.file_name)
     " unexpected
   endif
@@ -50,10 +50,10 @@ function! g:timer#Timer.Initialize(file_name) abort
   let self.file_name = a:file_name
 endfunction
 
-function! g:timer#Timer.Start() abort
-  if self.IsSameFileName()
+function! g:devotion#timer#Timer.Start() abort
+  if !self.IsSameFileName()
     " unexpected
-    let self.file_name = devotion#GetBufferFileName()
+    let self.file_name = devotion#GetEventBufferFileName()
   elseif self.is_started
     " unexpected
   endif
@@ -62,8 +62,8 @@ function! g:timer#Timer.Start() abort
   let self.is_started = v:true
 endfunction
 
-function! g:timer#Timer.Stop() abort
-  if self.IsSameFileName() || !self.is_started
+function! g:devotion#timer#Timer.Stop() abort
+  if !self.IsSameFileName() || !self.is_started
     " unexpected
   else
     " add only in normal case in contrast to Start()
@@ -72,16 +72,16 @@ function! g:timer#Timer.Stop() abort
   endif
 endfunction
 
-function! g:timer#Timer.GetMode() abort
+function! g:devotion#timer#Timer.GetMode() abort
   return self.mode
 endfunction
 
-function! g:timer#Timer.GetFileName() abort
+function! g:devotion#timer#Timer.GetFileName() abort
   return self.file_name
 endfunction
 
-function! g:timer#Timer.GetElapsedTime() abort
-  if self.IsSameFileName()
+function! g:devotion#timer#Timer.GetElapsedTime() abort
+  if !self.IsSameFileName()
     " unexpected
   else
     if self.is_started
@@ -91,7 +91,7 @@ function! g:timer#Timer.GetElapsedTime() abort
   endif
 endfunction
 
-function! g:timer#Timer.Clear() abort
+function! g:devotion#timer#Timer.Clear() abort
   if self.is_started
     " unexpected
   endif
@@ -100,12 +100,12 @@ function! g:timer#Timer.Clear() abort
   let self.is_started = v:false
 endfunction
 
-function! g:timer#Timer.IsSameFileName() abort
-  if !empty(self.file_name) && self.file_name ==# devotion#GetBufferFileName()
+function! g:devotion#timer#Timer.IsSameFileName() abort
+  if !empty(self.file_name) && (self.file_name ==# devotion#GetEventBufferFileName())
     return v:true
   else
     return v:false
   endif
 endfunction
 
-lockvar g:timer#Timer
+lockvar g:devotion#timer#Timer

@@ -1,60 +1,62 @@
 " variables
-let s:DataHome = empty($XDG_DATA_HOME) ? '~/.local/share' : $XDG_DATA_HOME
+let s:devotion_dir = empty($XDG_DATA_HOME) ? '~/.local/share' : $XDG_DATA_HOME
+let s:devotion_dir = expand(s:devotion_dir . '/devotion/')
+if !isdirectory(s:devotion_dir) | call mkdir(s:devotion_dir, "p") | endif
 
-let g:devotion#log_file = expand(s:DataHome . '/devotion.log')
+let g:devotion#log_file = expand(s:devotion_dir . 'devotion.log')
 let g:devotion#debug_enabled = v:true  " TODO
-let g:devotion#debug_file = expand(s:DataHome . '/debug.log')
+let g:devotion#debug_file = expand(s:devotion_dir . 'debug.log')
 " debug情報
 " event, localtime, file, elapsed_time
 
-let g:devotion#view_timer_ = g:timer#Timer.New('v')
-let g:devotion#edit_timer_ = g:timer#Timer.New('e')
+let g:devotion#view_timer_ = g:devotion#timer#Timer.New('view')
+let g:devotion#edit_timer_ = g:devotion#timer#Timer.New('edit')
 
 " utilities
 
-function devotion#IsTargetBuffer() abort
-  let l:filetype = getbufvar(str2nr(expand("<abuf>")), "&filetype")
-  if l:filetype ==# "vim" || l:filetype ==# "help"
+function! g:devotion#GetEventBufferFileName()
+  return expand("<afile>:p")
+endfunction
+
+function! g:devotion#GetEventBufferFileType()
+  return getbufvar(str2nr(expand("<abuf>")), "&filetype")
+endfunction
+
+function! g:devotion#IsTargetFileType() abort
+  let l:filetype = devotion#GetEventBufferFileType()
+  if (l:filetype ==# "vim") || (l:filetype ==# "help")
     return v:true
   else
     return v:false
   endif
 endfunction
 
-function! devotion#GetBufferFileName()
-  return expand("<afile>:p")
-endfunction
-
 " autocmd functions
 
-function devotion#BufEnter() abort
-  call g:devotion#view_timer_.Initialize(devotion#GetBufferFileName())
+function! g:devotion#BufEnter() abort
+  call g:devotion#view_timer_.Initialize(devotion#GetEventBufferFileName())
   call g:devotion#view_timer_.Start()
   " debug用logを書き出してくれる人を呼ぶ
 endfunction
 
-function devotion#BufLeave() abort
+function! g:devotion#BufLeave() abort
   call g:devotion#view_timer_.Stop()
-  echo g:devotion#view_timer_.GetElapsedTime()
-  call g:devotion#view_timer_.Clear()
   " debug用logを書き出してくれる人を呼ぶ
-  " 記録用logを書き出してくれる人を呼ぶ
-endfunction
-
-function devotion#BufUnload() abort
-  call g:devotion#view_timer_.Stop()
-  echo g:devotion#view_timer_.GetElapsedTime()
+  call g:devotion#log#Log.LogElapsedTime(g:devotion#view_timer_)
   call g:devotion#view_timer_.Clear()
 endfunction
 
-function devotion#InsertEnter() abort
+function! g:devotion#BufUnload() abort
 endfunction
 
-function devotion#InsertLeave() abort
+function! g:devotion#InsertEnter() abort
 endfunction
 
-function devotion#FocusLost() abort
+function! g:devotion#InsertLeave() abort
 endfunction
 
-function devotion#FocusGained() abort
+function! g:devotion#FocusLost() abort
+endfunction
+
+function! g:devotion#FocusGained() abort
 endfunction
