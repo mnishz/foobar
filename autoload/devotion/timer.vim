@@ -1,6 +1,10 @@
+" constants
+
 let s:STATE_NOT_STARTED = 'not_started'
 let s:STATE_STARTED = 'started'
 let s:STATE_SUSPENDED = 'suspended'
+
+" class
 
 unlockvar g:devotion#timer#Timer
 

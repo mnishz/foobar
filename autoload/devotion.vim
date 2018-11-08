@@ -53,14 +53,14 @@ endfunction
 " Stop         BufLeave/BufUnload
 
 function! g:devotion#BufEnter() abort
-  " debug用log書き出し、位置要検討
+  call g:devotion#log#Log.LogEventInfo('BufEnter   ')
   call g:devotion#view_timer_.Initialize(devotion#GetEventBufferFileName())
   call g:devotion#view_timer_.Start()
   call g:devotion#edit_timer_.Initialize(devotion#GetEventBufferFileName())
 endfunction
 
 function! g:devotion#BufLeave() abort
-  " debug用log書き出し、位置要検討
+  call g:devotion#log#Log.LogEventInfo('BufLeave   ')
   call g:devotion#view_timer_.Stop()
   call g:devotion#log#Log.LogElapsedTime(g:devotion#view_timer_)
   call g:devotion#log#Log.LogElapsedTime(g:devotion#edit_timer_)
@@ -69,29 +69,30 @@ function! g:devotion#BufLeave() abort
 endfunction
 
 function! g:devotion#BufUnload() abort
+  call g:devotion#log#Log.LogEventInfo('BufUnload  ')
   call g:devotion#BufLeave()
 endfunction
 
 function! g:devotion#InsertEnter() abort
-  " debug用log書き出し、位置要検討
+  call g:devotion#log#Log.LogEventInfo('InsertEnter')
   call g:devotion#view_timer_.Stop()
   call g:devotion#edit_timer_.Start()
 endfunction
 
 function! g:devotion#InsertLeave() abort
-  " debug用log書き出し、位置要検討
+  call g:devotion#log#Log.LogEventInfo('InsertLeave')
   call g:devotion#view_timer_.Start()
   call g:devotion#edit_timer_.Stop()
 endfunction
 
 function! g:devotion#FocusLost() abort
-  " debug用log書き出し、位置要検討
+  call g:devotion#log#Log.LogEventInfo('FocusLost  ')
   call g:devotion#view_timer_.SuspendIfNeeded()
   call g:devotion#edit_timer_.SuspendIfNeeded()
 endfunction
 
 function! g:devotion#FocusGained() abort
-  " debug用log書き出し、位置要検討
+  call g:devotion#log#Log.LogEventInfo('FocusGained')
   call g:devotion#view_timer_.RestartIfNeeded()
   call g:devotion#edit_timer_.RestartIfNeeded()
 endfunction
