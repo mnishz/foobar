@@ -73,6 +73,8 @@ function! g:devotion#BufUnload() abort
   "     BufEnter -> BufLeave -> BufUnload
   "     BufEnter -> BufUnload
   " only BufLeave clears, so log if the state is not cleared
+  " BufUnload はイレギュラーな処理が結構多そう。。
+  " ここだけ check を disable にするとか？
   if !g:devotion#view_timer_.IsCleared()
     call g:devotion#view_timer_.Stop()
     call g:devotion#log#Log.LogElapsedTime(g:devotion#view_timer_)

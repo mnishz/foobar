@@ -30,12 +30,12 @@ endfunction
 " function! s:TimeBinarySearch(log, time) abort
 function! g:devotion#log#Log.TimeBinarySearch(log, time) abort
   " under: -1, over: -2
-  " 2018/01/01 ‚Ì•ª‚ğo—Í‚·‚é—á (start < stop ‚ÌğŒ—vŠm”F)
-  " 20180101000000 ‚Æ 20180102000000 ‚Åó‚¯æ‚Á‚ÄAŒã‚ë‚ğ -1 ‚µ‚Ä
-  " 20180101235959 ‚Å’T‚·B‚Ç‚¿‚ç‚©‚ª”ÍˆÍ“à‚É‚ ‚é‚©Aunder && over ‚Ì‚Æ‚«‚Éo
-  " —Í‚·‚é‚à‚Ì‚ª‚ ‚éB‚»‚Ì‚Æ‚«‚É -1 ‚ª‚ ‚Á‚½ê‡‚Í 0 ‚ÉA-2 ‚ª‚ ‚Á‚½ê‡‚Í N-1
-  " ‚É‘‚«Š·‚¦‚éB
-  " for (int i = min; (i <= max): ++i) ‚Ü‚Å‘«‚µ‚±‚ŞB
+  " 2018/01/01 ã®åˆ†ã‚’å‡ºåŠ›ã™ã‚‹ä¾‹ (start < stop ã®æ¡ä»¶è¦ç¢ºèª)
+  " 20180101000000 ã¨ 20180102000000 ã§å—ã‘å–ã£ã¦ã€å¾Œã‚ã‚’ -1 ã—ã¦
+  " 20180101235959 ã§æ¢ã™ã€‚ã©ã¡ã‚‰ã‹ãŒç¯„å›²å†…ã«ã‚ã‚‹ã‹ã€under && over ã®ã¨ãã«å‡º
+  " åŠ›ã™ã‚‹ã‚‚ã®ãŒã‚ã‚‹ã€‚ãã®ã¨ãã« -1 ãŒã‚ã£ãŸå ´åˆã¯ 0 ã«ã€-2 ãŒã‚ã£ãŸå ´åˆã¯ N-1
+  " ã«æ›¸ãæ›ãˆã‚‹ã€‚
+  " for (int i = min; (i <= max): ++i) ã¾ã§è¶³ã—ã“ã‚€ã€‚
   if eval(a:log[0]).t > a:time | return -1 | endif
   if eval(a:log[-1]).t < a:time | return -2 | endif
   let l:left_idx = -1
@@ -48,6 +48,8 @@ function! g:devotion#log#Log.TimeBinarySearch(log, time) abort
       let l:left_idx = l:mid_idx
     endif
   endwhile
+  " ã“ã‚ŒãŒäºŒåˆ†æ¢ç´¢ãªã®ã¨ã€log ãŒç§’ã‚ªãƒ¼ãƒ€ã§è¢«ã‚‹ã“ã¨ã‚‚ã‚ã‚‹ã¯ãšãªã®ã§ã€åŒã˜æ™‚åˆ»ã¾
+  " ã§å¾Œã‚ã«æˆ»ã£ãŸã»ã†ãŒã„ã„ã€‚
   return l:right_idx
 endfunction
 
