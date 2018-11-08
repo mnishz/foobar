@@ -53,14 +53,14 @@ endfunction
 " Stop         BufLeave/BufUnload
 
 function! g:devotion#BufEnter() abort
-  call g:devotion#log#Log.LogEventInfo('BufEnter   ')
+  call g:devotion#log#Log.LogAutocmdEvent('BufEnter   ')
   call g:devotion#view_timer_.Initialize(devotion#GetEventBufferFileName())
   call g:devotion#view_timer_.Start()
   call g:devotion#edit_timer_.Initialize(devotion#GetEventBufferFileName())
 endfunction
 
 function! g:devotion#BufLeave() abort
-  call g:devotion#log#Log.LogEventInfo('BufLeave   ')
+  call g:devotion#log#Log.LogAutocmdEvent('BufLeave   ')
   call g:devotion#view_timer_.Stop()
   call g:devotion#log#Log.LogElapsedTime(g:devotion#view_timer_)
   call g:devotion#log#Log.LogElapsedTime(g:devotion#edit_timer_)
@@ -69,30 +69,42 @@ function! g:devotion#BufLeave() abort
 endfunction
 
 function! g:devotion#BufUnload() abort
-  call g:devotion#log#Log.LogEventInfo('BufUnload  ')
-  call g:devotion#BufLeave()
+  call g:devotion#log#Log.LogAutocmdEvent('BufUnload  ')
+  " both cases can happen
+  "     BufEnter -> BufLeave -> BufUnload
+  "     BufEnter -> BufUnload
+  " workaround: check the file name and log if not empty
+  if !empty(g:devotion#view_timer_.GetFileName())
+    call g:devotion#view_timer_.Stop()
+    call g:devotion#log#Log.LogElapsedTime(g:devotion#view_timer_)
+    call g:devotion#view_timer_.Clear()
+  endif
+  if !empty(g:devotion#edit_timer_.GetFileName())
+    call g:devotion#log#Log.LogElapsedTime(g:devotion#edit_timer_)
+    call g:devotion#edit_timer_.Clear()
+  endif
 endfunction
 
 function! g:devotion#InsertEnter() abort
-  call g:devotion#log#Log.LogEventInfo('InsertEnter')
+  call g:devotion#log#Log.LogAutocmdEvent('InsertEnter')
   call g:devotion#view_timer_.Stop()
   call g:devotion#edit_timer_.Start()
 endfunction
 
 function! g:devotion#InsertLeave() abort
-  call g:devotion#log#Log.LogEventInfo('InsertLeave')
+  call g:devotion#log#Log.LogAutocmdEvent('InsertLeave')
   call g:devotion#view_timer_.Start()
   call g:devotion#edit_timer_.Stop()
 endfunction
 
 function! g:devotion#FocusLost() abort
-  call g:devotion#log#Log.LogEventInfo('FocusLost  ')
+  call g:devotion#log#Log.LogAutocmdEvent('FocusLost  ')
   call g:devotion#view_timer_.SuspendIfNeeded()
   call g:devotion#edit_timer_.SuspendIfNeeded()
 endfunction
 
 function! g:devotion#FocusGained() abort
-  call g:devotion#log#Log.LogEventInfo('FocusGained')
+  call g:devotion#log#Log.LogAutocmdEvent('FocusGained')
   call g:devotion#view_timer_.RestartIfNeeded()
   call g:devotion#edit_timer_.RestartIfNeeded()
 endfunction
