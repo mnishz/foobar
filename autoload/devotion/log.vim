@@ -14,6 +14,31 @@ function! s:GetDateTimeStr() abort
   return strftime('%Y%m%d%H%M%S')
 endfunction
 
+function! s:TimeSearch(logs, time, mode) abort
+  if eval(a:logs[0]).t > a:time | return s:TIME_UNDER | endif
+  if eval(a:logs[-1]).t < a:time | return s:TIME_OVER | endif
+
+  " binary search for the first target timestamp
+  let l:top_idx = -1
+  let l:btm_idx = len(a:logs)
+  while l:btm_idx - l:top_idx > 1
+    let l:mid_idx = l:top_idx + (l:btm_idx - l:top_idx) / 2
+    if eval(a:logs[l:mid_idx]).t >= a:time
+      let l:btm_idx = l:mid_idx
+    else
+      let l:top_idx = l:mid_idx
+    endif
+  endwhile
+
+  if a:mode == s:MODE_LAST
+    while eval(a:logs[l:btm_idx]).t > a:time
+      let l:btm_idx -= 1
+    endwhile
+  endif
+
+  return l:btm_idx
+endfunction
+
 " class
 
 let g:devotion#log#Log = {}
@@ -36,10 +61,11 @@ function! g:devotion#log#Log.AddUpElapsedTime(start_time, stop_time) abort
   if a:start_time >= a:stop_time | echoerr 'invalid args' | return [] | endif
   let l:logs = readfile(g:devotion#log_file)
   let l:first_idx = s:TimeSearch(l:logs, a:start_time, s:MODE_FIRST)
+  " TODO: "stop_time - 1" is inappropriate
   let l:last_idx = s:TimeSearch(l:logs, a:stop_time - 1, s:MODE_LAST)
 
   let l:found = v:false
-  if (l:first_idx > s:TIME_FOUND) || (l:last_idx > s:TIME_FOUND)
+  if (l:first_idx >= s:TIME_FOUND) || (l:last_idx >= s:TIME_FOUND)
     let l:found = v:true
   elseif (l:first_idx == s:TIME_UNDER) && (l:last_idx == s:TIME_OVER)
     let l:found = v:true
@@ -69,31 +95,6 @@ function! g:devotion#log#Log.AddUpElapsedTime(start_time, stop_time) abort
   endif
 
   return l:result_list
-endfunction
-
-function! s:TimeSearch(logs, time, mode) abort
-  if eval(a:logs[0]).t > a:time | return s:TIME_UNDER | endif
-  if eval(a:logs[-1]).t < a:time | return s:TIME_OVER | endif
-
-  " binary search for the first target timestamp
-  let l:top_idx = -1
-  let l:btm_idx = len(a:logs)
-  while l:btm_idx - l:top_idx > 1
-    let l:mid_idx = l:top_idx + (l:btm_idx - l:top_idx) / 2
-    if eval(a:logs[l:mid_idx]).t >= a:time
-      let l:btm_idx = l:mid_idx
-    else
-      let l:top_idx = l:mid_idx
-    endif
-  endwhile
-
-  if a:mode == s:MODE_LAST
-    while eval(a:logs[l:btm_idx]).t > a:time
-      let l:btm_idx -= 1
-    endwhile
-  endif
-
-  return l:btm_idx
 endfunction
 
 function! g:devotion#log#Log.LogAutocmdEvent(event) abort
