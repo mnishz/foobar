@@ -1,10 +1,12 @@
-" Œ‹‰Ê‚Ì‘‚«o‚µ
+scriptencoding utf-8
+
+" çµæœã®æ›¸ãå‡ºã—
 " for idx in range(0, 100000)
 "   let s:log = {'t': <SID>GetDayNum(idx), 'e': 1.0, 'ft': 'vim', 'm': 'V', 'f': 'W:\.vimrc'}
 "   call writefile([string(s:log)], 'W:\.cache\hoge.log', 'a')
 " endfor
 
-" Œ‹‰Ê‚Ì“Ç‚İo‚µ
+" çµæœã®èª­ã¿å‡ºã—
 " let s:log = readfile('W:\.cache\hoge.log')
 let s:log = readfile('W:\.cache\devotion.txt')
 " string
@@ -14,7 +16,7 @@ let s:log = readfile('W:\.cache\devotion.txt')
 " echo eval(s:log[0])
 " echo eval(s:log[0]).t
 
-" binary search, ‚»‚±‚»‚±‘‚¢
+" binary search, ãã“ãã“æ—©ã„
 function! s:TimeBinarySearch(target_time_num) abort
   let l:left_idx = -1
   let l:right_idx = len(s:log)
@@ -36,7 +38,7 @@ endfunction
 function! s:AddUpAndShowElapsedTime(start_time_num, stop_time_num) abort
   " TODO: error check
   let l:first_idx = <SID>TimeBinarySearch(a:start_time_num)
-  " TODO: Œ©‚Â‚©‚Á‚½‚Æ‚©AŒ©‚Â‚©‚ç‚È‚©‚Á‚½‚Æ‚©AÅŒã‚ÌƒGƒ“ƒgƒŠ‚ğŠÜ‚ŞŠÜ‚Ü‚È‚¢‚Æ‚©—vŠm”F
+  " TODO: è¦‹ã¤ã‹ã£ãŸã¨ã‹ã€è¦‹ã¤ã‹ã‚‰ãªã‹ã£ãŸã¨ã‹ã€æœ€å¾Œã®ã‚¨ãƒ³ãƒˆãƒªã‚’å«ã‚€å«ã¾ãªã„ã¨ã‹è¦ç¢ºèª
   let l:last_idx = <SID>TimeBinarySearch(a:stop_time_num) - 1
 
   let l:elapsed_time_list = []
@@ -54,7 +56,7 @@ function! s:AddUpAndShowElapsedTime(start_time_num, stop_time_num) abort
       endif
     endfor
     if l:same_file_idx == l:NOT_FOUND
-      " TODO: ƒNƒ‰ƒX‚É‰Šú‰»ŠÖ”‚ğì‚è‚½‚¢AŠg’£«‚Ì‚½‚ß
+      " TODO: ã‚¯ãƒ©ã‚¹ã«åˆæœŸåŒ–é–¢æ•°ã‚’ä½œã‚ŠãŸã„ã€æ‹¡å¼µæ€§ã®ãŸã‚
       let l:elapsed_time_list += [{'file': l:log_dict.f, 'filetype': l:log_dict.ft, 'view': 0.0, 'edit': 0.0}]
       let l:same_file_idx = -1  " assume it to be the last one
     endif
@@ -64,12 +66,12 @@ function! s:AddUpAndShowElapsedTime(start_time_num, stop_time_num) abort
   return l:elapsed_time_list
 endfunction
 
-" 2018/10/29 ‚Ì’èŠÔ“à‚ÌŒ‹‰Ê‚ğŒ©‚é
+" 2018/10/29 ã®å®šæ™‚é–“å†…ã®çµæœã‚’è¦‹ã‚‹
 " echo <SID>AddUpAndShowElapsedTime(20181029000000, 20190101000000)
 " call <SID>AddUpAndShowElapsedTime(20181029000000, 20181030000000)
 
 function! s:GetDayNum(day_offset)
-  " TODO: list ‚©‰½‚©‚É‚µ‚Ä‚Ü‚Æ‚ß‚Ä•Ô‚³‚È‚¢‚ÆA“ú•t‚ğ‚Ü‚½‚®‚Æ‚«‚É‚¨‚©‚µ‚­‚È‚é
+  " TODO: list ã‹ä½•ã‹ã«ã—ã¦ã¾ã¨ã‚ã¦è¿”ã•ãªã„ã¨ã€æ—¥ä»˜ã‚’ã¾ãŸãã¨ãã«ãŠã‹ã—ããªã‚‹
   let l:time = localtime() + (a:day_offset * 60 * 60 * 24)
   let l:day = eval(strftime("%Y%m%d%H%M%S", l:time))
   return (l:day - (l:day % 1000000))
@@ -85,11 +87,11 @@ function! s:DevotionToday() abort
   endfor
 endfunction
 
-" •¶š—ñ‚Æ‚µ‚Ä‹L‰¯‚µ‚ÄA“ú•t‚¾‚¯•¶š—ñ‚Ìindex‚Æ‚µ‚Äo‚·‚©‚ÈBB
-" “¯‚¶Œ…”‚¾‚Á‚½‚ç2286”N‚Ü‚Å‚¢‚¯‚é
+" æ–‡å­—åˆ—ã¨ã—ã¦è¨˜æ†¶ã—ã¦ã€æ—¥ä»˜ã ã‘æ–‡å­—åˆ—ã®indexã¨ã—ã¦å‡ºã™ã‹ãªã€‚ã€‚
+" åŒã˜æ¡æ•°ã ã£ãŸã‚‰2286å¹´ã¾ã§ã„ã‘ã‚‹
 
-" 1ŒÂ‘‚«‚Ş‚Ì‚Í‚¢‚¢‚¯‚ÇA‘S‘Ì‚ğ(«‘‚Æ‚µ‚Ä)“Ç‚İo‚·‚Ì‚Í‚·‚²‚­ŠÔ‚ª‚©‚©‚é
-" ‚ ‚Æ«‘‚¾‚Æ‡”Ô‚ª•ÛØ‚³‚ê‚È‚¢
+" 1å€‹æ›¸ãè¾¼ã‚€ã®ã¯ã„ã„ã‘ã©ã€å…¨ä½“ã‚’(è¾æ›¸ã¨ã—ã¦)èª­ã¿å‡ºã™ã®ã¯ã™ã”ãæ™‚é–“ãŒã‹ã‹ã‚‹
+" ã‚ã¨è¾æ›¸ã ã¨é †ç•ªãŒä¿è¨¼ã•ã‚Œãªã„
 " let s:log = {
 "       \ 'time': localtime(),
 "       \ 'elps': 5.0,
@@ -98,13 +100,13 @@ endfunction
 "       \}
 " call writefile([string(s:log)], 'W:\.cache\hoge.log', 'a')
 
-" list‚Ì’†g‚Í•¶š—ñ‚©”š‚Å‚È‚¢‚Æ‚¢‚¯‚È‚¢‚Ì‚ÅNG
+" listã®ä¸­èº«ã¯æ–‡å­—åˆ—ã‹æ•°å­—ã§ãªã„ã¨ã„ã‘ãªã„ã®ã§NG
 " let s:log = []
 " call add(s:log, [localtime(), 5.0, 'VV', 'W:\.vimrc'])
 " call add(s:log, [localtime(), 7.0, 'VV', 'W:\.vimrc'])
 " " echo s:log
 
-" Œ‹‰Ê‚Ì“Ç‚İ‚İ
+" çµæœã®èª­ã¿è¾¼ã¿
 " let s:stored = '['
 " for s:line in readfile('W:\.cache\hoge.log')
 "   let s:stored .= s:line . ', '
@@ -116,8 +118,8 @@ endfunction
 " echo eval(s:log[0]).time
 " echo eval(s:log[1]).time
 
-" ‚±‚Ìê‡AMylen() ‚Í’P‚É«‘‚©‚çŒÄ‚×‚é‚æ‚Æ‚¢‚¤’è‹`‚Å‚ ‚Á‚Ä
-" “Á’è‚Ì«‘‚Æ‚ÌŒ‹‚Ñ‚Â‚«‚Í‚È‚¢
+" ã“ã®å ´åˆã€Mylen() ã¯å˜ã«è¾æ›¸ã‹ã‚‰å‘¼ã¹ã‚‹ã‚ˆã¨ã„ã†å®šç¾©ã§ã‚ã£ã¦
+" ç‰¹å®šã®è¾æ›¸ã¨ã®çµã³ã¤ãã¯ãªã„
 " function! s:Mylen() dict
 "   return len(self.data)
 " endfunction
@@ -132,7 +134,7 @@ endfunction
 " let s:anotherDict = {'name': "Nishihata", 'data': [2, 4, 6, 8, 10], 'foo': function("Mylen")}
 " echo s:anotherDict.foo()
 " 
-" " ŒÄ‚Ño‚·‚±‚Æ‚Í‚Å‚«‚é‚ªAdata ƒƒ“ƒo‚ª‚È‚¢‚Ì‚Å Mylen() “à•”‚ÅƒGƒ‰[‚Æ‚È‚é
+" " å‘¼ã³å‡ºã™ã“ã¨ã¯ã§ãã‚‹ãŒã€data ãƒ¡ãƒ³ãƒãŒãªã„ã®ã§ Mylen() å†…éƒ¨ã§ã‚¨ãƒ©ãƒ¼ã¨ãªã‚‹
 " " let hogeDict = {'huga': function("Mylen")}
 " " echo hogeDict.huga()
 " 
@@ -144,8 +146,8 @@ endfunction
 "       \ 'is_stopped': 1,
 "       \ }
 " 
-" " æ‚É s:Timer ‚ğéŒ¾‚µ‚Ä‚¨‚©‚È‚¢‚ÆA‚»‚ñ‚È‚à‚Ì‚È‚¢‚Æ“{‚ç‚ê‚é
-" " ‚È‚Ì‚ÅA‚±‚ÌŠÖ”‚Æ s:Timer ‚É‚Í–¾Šm‚ÈŒq‚ª‚è‚ª‚ ‚é
+" " å…ˆã« s:Timer ã‚’å®£è¨€ã—ã¦ãŠã‹ãªã„ã¨ã€ãã‚“ãªã‚‚ã®ãªã„ã¨æ€’ã‚‰ã‚Œã‚‹
+" " ãªã®ã§ã€ã“ã®é–¢æ•°ã¨ s:Timer ã«ã¯æ˜ç¢ºãªç¹‹ãŒã‚ŠãŒã‚ã‚‹
 " function! s:Timer.GetElapsedTime()
 "   return self.elapsed_time
 " endfunction
@@ -159,6 +161,6 @@ endfunction
 " 
 " echo s:Timer
 " 
-" " ‘¼‚Ì«‘‚ÆŒ‹‚Ñ•t‚¯‚æ‚¤‚Æ‚µ‚Ä‚à‚»‚ñ‚ÈŠÖ”’m‚ç‚È‚¢‚ÆŒ¾‚í‚ê‚é
+" " ä»–ã®è¾æ›¸ã¨çµã³ä»˜ã‘ã‚ˆã†ã¨ã—ã¦ã‚‚ãã‚“ãªé–¢æ•°çŸ¥ã‚‰ãªã„ã¨è¨€ã‚ã‚Œã‚‹
 " " let barDict = {'getter': function("s:Timer.GetElapsedTime"), 'elapsed_time': 5.0}
 " " echo barDict.getter()

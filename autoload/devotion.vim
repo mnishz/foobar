@@ -1,3 +1,5 @@
+scriptencoding utf-8
+
 " variables
 
 let s:devotion_dir = empty($XDG_DATA_HOME) ? '~/.local/share' : $XDG_DATA_HOME

@@ -1,3 +1,5 @@
+scriptencoding utf-8
+
 " utilities
 function! s:GetDateTimeStr() abort
   return strftime('%Y%m%d%H%M%S')

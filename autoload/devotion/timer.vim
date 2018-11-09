@@ -1,3 +1,5 @@
+scriptencoding utf-8
+
 " constants
 
 let s:STATE_CLEARED = 'cleared'

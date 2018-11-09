@@ -11,7 +11,11 @@ let g:loaded_devotion = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
+scriptencoding utf-8
+
 " TODO: 年単位くらいでファイルを分ける？
+" TODO: 読み込みのほうは後でどうにでもなるけど、書き込みのほうは何かしらできて
+" いないといけない気がする。
 " TODO: 結果表示関数 or コマンドの作成
 " TODO: vimの総起動時間もあると比較ができて良さそう
 " TODO: release前にdebugを落とす
