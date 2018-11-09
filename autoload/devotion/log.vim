@@ -5,8 +5,6 @@ scriptencoding utf-8
 let s:TIME_FOUND = 0  | lockvar s:TIME_FOUND
 let s:TIME_UNDER = -1 | lockvar s:TIME_UNDER
 let s:TIME_OVER  = -2 | lockvar s:TIME_OVER
-let s:MODE_FIRST = 0  | lockvar s:MODE_FIRST
-let s:MODE_LAST  = 1  | lockvar s:MODE_LAST
 
 " utilities
 
@@ -14,7 +12,7 @@ function! s:GetDateTimeStr() abort
   return strftime('%Y%m%d%H%M%S')
 endfunction
 
-function! s:TimeSearch(logs, time, mode) abort
+function! s:TimeSearch(logs, time) abort
   if eval(a:logs[0]).t > a:time | return s:TIME_UNDER | endif
   if eval(a:logs[-1]).t < a:time | return s:TIME_OVER | endif
 
@@ -29,12 +27,6 @@ function! s:TimeSearch(logs, time, mode) abort
       let l:top_idx = l:mid_idx
     endif
   endwhile
-
-  if a:mode == s:MODE_LAST
-    while eval(a:logs[l:btm_idx]).t > a:time
-      let l:btm_idx -= 1
-    endwhile
-  endif
 
   return l:btm_idx
 endfunction
@@ -57,22 +49,64 @@ function! g:devotion#log#Log.LogElapsedTime(timer) abort
 endfunction
 
 function! g:devotion#log#Log.AddUpElapsedTime(start_time, stop_time) abort
-  " this function adds up from start_time to (stop_time - 1)
+  " this function adds up from start_time to stop_time, but excludes stop_time
   if a:start_time >= a:stop_time | echoerr 'invalid args' | return [] | endif
   let l:logs = readfile(g:devotion#log_file)
-  let l:first_idx = s:TimeSearch(l:logs, a:start_time, s:MODE_FIRST)
-  " TODO: "stop_time - 1" is inappropriate
-  let l:last_idx = s:TimeSearch(l:logs, a:stop_time - 1, s:MODE_LAST)
+  let l:max_idx = len(l:logs) - 1
+  let l:first_idx = s:TimeSearch(l:logs, a:start_time)
+  let l:last_idx = s:TimeSearch(l:logs, a:stop_time)
+
+  " code to exclude stop_time, ummmmmmm....
+  " we don't need the following code if we can covert date/time -> Unix time
+
+  " no   start  stop   any entry  first  last
+  " 1-1  UNDER  UNDER  not found
+  " 1-2         0      not found
+  " 1-3         MID    found      0      MID-1
+  " 1-4         MAX    found      0      MAX-1
+  " 1-5         OVER   found      0      MAX
+  " 2-1  0      UNDER  N/A
+  " 2-2         0      found      0      0
+  " 2-3         MID    found      0      MID-1
+  " 2-4         MAX    found      0      MAX-1
+  " 2-5         OVER   found      0      MAX
+  " 3-1  MID    UNDER  N/A
+  " 3-2         0      N/A
+  " 3-3         MID    found      MID    MID
+  " 3-4         MAX    found      MID    MAX-1
+  " 3-5         OVER   found      MID    MAX
+  " 4-1  MAX    UNDER  N/A
+  " 4-2         0      N/A
+  " 4-3         MID    N/A
+  " 4-4         MAX    found      MAX    MAX
+  " 4-5         OVER   found      MAX    MAX
+  " 5-1  OVER   UNDER  N/A
+  " 5-2         0      N/A
+  " 5-3         MID    N/A
+  " 5-4         MAX    N/A
+  " 5-5         OVER   not found
+
+  " 5-1, 5-2, 5-3, 5-4
+  if (l:first_idx == s:TIME_OVER) && (l:last_idx != s:TIME_OVER) | echoerr 'devotion N/A' | endif
+  " 2-1, 3-1, 3-2, 4-1, 4-2, 4-3
+  if (l:first_idx >= s:TIME_FOUND) && (l:last_idx != s:TIME_OVER) && (l:first_idx > l:last_idx) | echoerr 'devotion N/A' | endif
 
   let l:found = v:false
-  if (l:first_idx >= s:TIME_FOUND) || (l:last_idx >= s:TIME_FOUND)
-    let l:found = v:true
-  elseif (l:first_idx == s:TIME_UNDER) && (l:last_idx == s:TIME_OVER)
+  " 2-2, 2-3, 2-4, 2-5, 3-3, 3-4, 3-5, 4-4, 4-5
+  if l:first_idx >= s:TIME_FOUND | let l:found = v:true | endif
+  " 1-3, 1-4, 1-5
+  if (l:first_idx == s:TIME_UNDER) && ((l:last_idx > 0) || (l:last_idx == s:TIME_OVER))
     let l:found = v:true
   endif
 
   let l:first_idx = (l:first_idx == s:TIME_UNDER) ? 0 : l:first_idx
-  let l:last_idx  = (l:last_idx  == s:TIME_OVER)  ? (len(l:logs) - 1) : l:last_idx
+  if l:last_idx == s:TIME_OVER  " 1-5, 2-5, 3-5, 4-5
+    let l:last_idx = l:max_idx
+  elseif l:first_idx == l:last_idx  " 2-2, 3-3, 4-4
+    let l:last_idx = l:first_idx
+  else
+    let l:last_idx -= 1
+  endif
 
   let l:result_list = []
   if l:found
