@@ -71,18 +71,17 @@ endfunction
 
 function! g:devotion#BufUnload() abort
   call g:devotion#log#Log.LogAutocmdEvent('BufUnload  ')
-  " both cases can happen
-  "     BufEnter -> BufLeave -> BufUnload
-  "     BufEnter -> BufUnload
-  " only BufLeave clears, so log if the state is not cleared
-  " BufUnload はイレギュラーな処理が結構多そう。。
-  " ここだけ check を disable にするとか？
-  if !g:devotion#view_timer_.IsCleared()
+  " each case can happen, BufUnload might be a little irregular
+  "   BufEnter -> BufLeave -> BufUnload
+  "   BufEnter -> BufUnload for the target file
+  "   BufEnter -> BufUnload for another file -> BufUnload for the target file
+  " just check the file name
+  if g:devotion#view_timer_.IsSameFileName()
     call g:devotion#view_timer_.Stop()
     call g:devotion#log#Log.LogElapsedTime(g:devotion#view_timer_)
     call g:devotion#view_timer_.Clear()
   endif
-  if !g:devotion#edit_timer_.IsCleared()
+  if g:devotion#edit_timer_.IsSameFileName()
     call g:devotion#log#Log.LogElapsedTime(g:devotion#edit_timer_)
     call g:devotion#edit_timer_.Clear()
   endif

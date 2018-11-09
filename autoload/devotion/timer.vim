@@ -2,14 +2,11 @@ scriptencoding utf-8
 
 " constants
 
-let s:STATE_CLEARED = 'cleared'
-let s:STATE_NOT_STARTED = 'not_started'
-let s:STATE_STARTED = 'started'
-let s:STATE_SUSPENDED = 'suspended'
+let s:STATE_NOT_STARTED = 'not_started' | lockvar s:STATE_NOT_STARTED
+let s:STATE_STARTED     = 'started'     | lockvar s:STATE_STARTED
+let s:STATE_SUSPENDED   = 'suspended'   | lockvar s:STATE_SUSPENDED
 
 " class
-
-unlockvar g:devotion#timer#Timer
 
 let g:devotion#timer#Timer = {
       \ 'mode': '',
@@ -31,7 +28,6 @@ function! g:devotion#timer#Timer.Initialize(file_name) abort
     call g:devotion#log#Log.LogUnexpectedState()
   endif
   call self.Clear()
-  let self.state = s:STATE_NOT_STARTED
   let self.file_name = a:file_name
 endfunction
 
@@ -42,7 +38,7 @@ function! g:devotion#timer#Timer.Clear() abort
   endif
   let self.file_name = ''
   let self.elapsed_time = 0.0
-  let self.state = s:STATE_CLEARED
+  let self.state = s:STATE_NOT_STARTED
 endfunction
 
 function! g:devotion#timer#Timer.Start() abort
@@ -124,10 +120,6 @@ endfunction
 
 function! g:devotion#timer#Timer.GetState() abort
   return self.state
-endfunction
-
-function! g:devotion#timer#Timer.IsCleared() abort
-  return (self.state ==# s:STATE_CLEARED) ? v:true : v:false
 endfunction
 
 function! g:devotion#timer#Timer.CalcAndAddElapsedTime() abort

@@ -1,13 +1,20 @@
 scriptencoding utf-8
 
+" constants
+
+let s:TIME_FOUND = 0  | lockvar s:TIME_FOUND
+let s:TIME_UNDER = -1 | lockvar s:TIME_UNDER
+let s:TIME_OVER  = -2 | lockvar s:TIME_OVER
+let s:MODE_FIRST = 0  | lockvar s:MODE_FIRST
+let s:MODE_LAST  = 1  | lockvar s:MODE_LAST
+
 " utilities
+
 function! s:GetDateTimeStr() abort
   return strftime('%Y%m%d%H%M%S')
 endfunction
 
 " class
-
-unlockvar g:devotion#log#Log
 
 let g:devotion#log#Log = {}
 
@@ -24,35 +31,69 @@ function! g:devotion#log#Log.LogElapsedTime(timer) abort
   endif
 endfunction
 
-function! g:devotion#log#Log.AddUpAndShowElapsedTime(start, stop) abort
-"   let l:log = readfile(g:devotion#log_file)
-  let l:log = readfile('W:\.cache\hoge.log')
+function! g:devotion#log#Log.AddUpElapsedTime(start_time, stop_time) abort
+  " this function adds up from start_time to (stop_time - 1)
+  if a:start_time >= a:stop_time | echoerr 'invalid args' | return [] | endif
+  let l:logs = readfile(g:devotion#log_file)
+  let l:first_idx = s:TimeSearch(l:logs, a:start_time, s:MODE_FIRST)
+  let l:last_idx = s:TimeSearch(l:logs, a:stop_time - 1, s:MODE_LAST)
+
+  let l:found = v:false
+  if (l:first_idx > s:TIME_FOUND) || (l:last_idx > s:TIME_FOUND)
+    let l:found = v:true
+  elseif (l:first_idx == s:TIME_UNDER) && (l:last_idx == s:TIME_OVER)
+    let l:found = v:true
+  endif
+
+  let l:first_idx = (l:first_idx == s:TIME_UNDER) ? 0 : l:first_idx
+  let l:last_idx  = (l:last_idx  == s:TIME_OVER)  ? (len(l:logs) - 1) : l:last_idx
+
+  let l:result_list = []
+  if l:found
+    let l:NOT_FOUND = -1 | lockvar l:NOT_FOUND
+    for log_str_line in l:logs[l:first_idx:l:last_idx]
+      let l:log_dict = eval(log_str_line)
+      let l:result_idx = l:NOT_FOUND
+      for idx in range(len(l:result_list))
+        if l:result_list[idx].file ==# l:log_dict.f
+          let l:result_idx = idx
+          break
+        endif
+      endfor
+      if l:result_idx == l:NOT_FOUND
+        let l:result_list += [{'file': l:log_dict.f, 'filetype': l:log_dict.ft, 'view': 0.0, 'edit': 0.0}]
+        let l:result_idx = -1  " assume it to be the last one
+      endif
+      let l:result_list[l:result_idx][l:log_dict.m] += l:log_dict.e
+    endfor
+  endif
+
+  return l:result_list
 endfunction
 
-" function! s:TimeBinarySearch(log, time) abort
-function! g:devotion#log#Log.TimeBinarySearch(log, time) abort
-  " under: -1, over: -2
-  " 2018/01/01 の分を出力する例 (start < stop の条件要確認)
-  " 20180101000000 と 20180102000000 で受け取って、後ろを -1 して
-  " 20180101235959 で探す。どちらかが範囲内にあるか、under && over のときに出
-  " 力するものがある。そのときに -1 があった場合は 0 に、-2 があった場合は N-1
-  " に書き換える。
-  " for (int i = min; (i <= max): ++i) まで足しこむ。
-  if eval(a:log[0]).t > a:time | return -1 | endif
-  if eval(a:log[-1]).t < a:time | return -2 | endif
-  let l:left_idx = -1
-  let l:right_idx = len(a:log)
-  while l:right_idx - l:left_idx > 1
-    let l:mid_idx = l:left_idx + (l:right_idx - l:left_idx) / 2
-    if eval(a:log[l:mid_idx]).t >= a:time
-      let l:right_idx = l:mid_idx
+function! s:TimeSearch(logs, time, mode) abort
+  if eval(a:logs[0]).t > a:time | return s:TIME_UNDER | endif
+  if eval(a:logs[-1]).t < a:time | return s:TIME_OVER | endif
+
+  " binary search for the first target timestamp
+  let l:top_idx = -1
+  let l:btm_idx = len(a:logs)
+  while l:btm_idx - l:top_idx > 1
+    let l:mid_idx = l:top_idx + (l:btm_idx - l:top_idx) / 2
+    if eval(a:logs[l:mid_idx]).t >= a:time
+      let l:btm_idx = l:mid_idx
     else
-      let l:left_idx = l:mid_idx
+      let l:top_idx = l:mid_idx
     endif
   endwhile
-  " これが二分探索なのと、log が秒オーダで被ることもあるはずなので、同じ時刻ま
-  " で後ろに戻ったほうがいい。
-  return l:right_idx
+
+  if a:mode == s:MODE_LAST
+    while eval(a:logs[l:btm_idx]).t > a:time
+      let l:btm_idx -= 1
+    endwhile
+  endif
+
+  return l:btm_idx
 endfunction
 
 function! g:devotion#log#Log.LogAutocmdEvent(event) abort
