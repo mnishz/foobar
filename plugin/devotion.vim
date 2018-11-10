@@ -25,16 +25,6 @@ scriptencoding utf-8
 " pure Vim script
 " 不自然な言葉遣いや表現があったら教えてね
 
-" :DevotionRange
-" :DevotionToday
-" :DevotionLastDay (前日ではなく、最終使用日がいいかも)
-" :DevotionThisWeek
-" :DevotionLastWeek
-" :DevotionThisMonth
-" :DevotionLastMonth
-" :DevotionThisYear
-" :DevotionLastYear
-
 augroup devotion
   autocmd!
   autocmd BufEnter *    if g:devotion#IsTargetFileType() | call g:devotion#BufEnter()    | endif
@@ -45,6 +35,16 @@ augroup devotion
   autocmd FocusLost *   if g:devotion#IsTargetFileType() | call g:devotion#FocusLost()   | endif
   autocmd FocusGained * if g:devotion#IsTargetFileType() | call g:devotion#FocusGained() | endif
 augroup END
+
+command! -nargs=+ DevotionRange call g:devotion#DevotionRange(<f-args>)
+command! DevotionToday call g:devotion#DevotionToday()
+" :DevotionLastDay (前日ではなく、最終使用日がいいかも)
+" :DevotionThisWeek
+" :DevotionLastWeek
+" :DevotionThisMonth
+" :DevotionLastMonth
+" :DevotionThisYear
+" :DevotionLastYear
 
 let &cpo = s:save_cpo
 unlet s:save_cpo

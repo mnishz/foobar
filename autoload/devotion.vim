@@ -4,7 +4,7 @@ scriptencoding utf-8
 
 let s:devotion_dir = empty($XDG_DATA_HOME) ? '~/.local/share' : $XDG_DATA_HOME
 let s:devotion_dir = expand(s:devotion_dir . '/devotion/')
-if !isdirectory(s:devotion_dir) | call mkdir(s:devotion_dir, "p") | endif
+if !isdirectory(s:devotion_dir) | call mkdir(s:devotion_dir, 'p') | endif
 
 let g:devotion#log_file = expand(s:devotion_dir . 'devotion.log')
 let g:devotion#debug_enabled = v:true  " TODO
@@ -16,20 +16,45 @@ let g:devotion#edit_timer_ = g:devotion#timer#Timer.New('edit')
 " utilities
 
 function! g:devotion#GetEventBufferFileName()
-  return expand("<afile>:p")
+  return expand('<afile>:p')
 endfunction
 
 function! g:devotion#GetEventBufferFileType()
-  return getbufvar(str2nr(expand("<abuf>")), "&filetype")
+  return getbufvar(str2nr(expand('<abuf>')), '&filetype')
 endfunction
 
 function! g:devotion#IsTargetFileType() abort
   let l:filetype = devotion#GetEventBufferFileType()
-  if (l:filetype ==# "vim") || (l:filetype ==# "help")
+  if (l:filetype ==# 'vim') || (l:filetype ==# 'help')
     return v:true
   else
     return v:false
   endif
+endfunction
+
+" command functions to display xxx
+
+function! g:devotion#DevotionRange(start_time, stop_time) abort
+  echo 'You devoted your following time to Vim between '
+  echon a:start_time[0:3] . '/' . a:start_time[4:5] . '/' . a:start_time[6:7] . ' '
+  echon a:start_time[8:9] . ':' . a:start_time[10:11] . ':' . a:start_time[12:13] . ' and '
+  echon a:stop_time[0:3] . '/' . a:stop_time[4:5] . '/' . a:stop_time[6:7] . ' '
+  echon a:stop_time[8:9] . ':' . a:stop_time[10:11] . ':' . a:stop_time[12:13] . ".\n\n"
+  let l:data = g:devotion#log#Log.AddUpElapsedTime(a:start_time, a:stop_time)
+  for entry in l:data
+    " echo '  Viewed: ' . string(entry.view) . ' sec, Edited: ' . string(entry.edit) . ' sec, File: ' . entry.file . ', filetype: ' . entry.filetype
+    echo entry.file . ' (filetype: ' . entry.filetype . ')'
+    echo '  Viewed: ' . string(entry.view)
+    echo '  Edited: ' . string(entry.edit)
+  endfor
+endfunction
+
+function! g:devotion#DevotionToday() abort
+  let l:today = localtime()
+  let l:tomorrow = l:today + (60 * 60 * 24)
+  let l:today = eval(strftime('%Y%m%d000000', l:today))
+  let l:tomorrow = eval(strftime('%Y%m%d000000', l:tomorrow))
+  call g:devotion#DevotionRange(l:today, l:tomorrow)
 endfunction
 
 " autocmd functions
