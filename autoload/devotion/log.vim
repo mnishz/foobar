@@ -31,14 +31,10 @@ function! s:TimeSearch(logs, time) abort
   return l:btm_idx
 endfunction
 
-" class
-
-let g:devotion#log#Log = {}
-
-function! g:devotion#log#Log.LogElapsedTime(timer) abort
+function! g:devotion#log#LogElapsedTime(timer) abort
   if !empty(a:timer.GetElapsedTime())
     let l:data = {
-          \ 't':  eval(s:GetDateTimeStr()),
+          \ 't':  eval(<SID>GetDateTimeStr()),
           \ 'e':  a:timer.GetElapsedTime(),
           \ 'm':  a:timer.GetMode(),
           \ 'ft': devotion#GetEventBufferFileType(),
@@ -48,13 +44,14 @@ function! g:devotion#log#Log.LogElapsedTime(timer) abort
   endif
 endfunction
 
-function! g:devotion#log#Log.AddUpElapsedTime(start_time, stop_time) abort
+function! g:devotion#log#AddUpElapsedTime(start_time, stop_time) abort
   " this function adds up from start_time to stop_time, but excludes stop_time
   if a:start_time >= a:stop_time | echoerr 'invalid args' | return [] | endif
+  " TODO: it should be larger than 19700101000000
   let l:logs = readfile(g:devotion#log_file)
   let l:max_idx = len(l:logs) - 1
-  let l:first_idx = s:TimeSearch(l:logs, a:start_time)
-  let l:last_idx = s:TimeSearch(l:logs, a:stop_time)
+  let l:first_idx = <SID>TimeSearch(l:logs, a:start_time)
+  let l:last_idx = <SID>TimeSearch(l:logs, a:stop_time)
 
   " code to exclude stop_time, ummmmmmm....
   " we don't need the following code if we can covert date/time -> Unix time
@@ -131,7 +128,19 @@ function! g:devotion#log#Log.AddUpElapsedTime(start_time, stop_time) abort
   return l:result_list
 endfunction
 
-function! g:devotion#log#Log.LogAutocmdEvent(event) abort
+function! g:devotion#log#GetLastDay() abort
+  let l:logs = readfile(g:devotion#log_file)
+  let l:today = eval(strftime('%Y%m%d000000'))
+  let l:idx = <SID>TimeSearch(l:logs, l:today)
+  let l:last_day = 0
+  if l:idx != 0
+    let l:last_day = eval(l:logs[l:idx - 1]).t
+    let l:last_day = l:last_day - (l:last_day % 1000000)
+  endif
+  return l:last_day
+endfunction
+
+function! g:devotion#log#LogAutocmdEvent(event) abort
   if g:devotion#debug_enabled
     let l:data = a:event
     let l:data .= ' ' . s:GetDateTimeStr()
@@ -140,7 +149,7 @@ function! g:devotion#log#Log.LogAutocmdEvent(event) abort
   endif
 endfunction
 
-function! g:devotion#log#Log.LogTimerEvent(timer, function) abort
+function! g:devotion#log#LogTimerEvent(timer, function) abort
   if g:devotion#debug_enabled
     let l:data = '  ' . a:timer.GetMode() . ' ' . a:function . ' '
     let l:data .= a:timer.GetFileName() . ' ' . a:timer.GetState() . ' '
@@ -149,18 +158,16 @@ function! g:devotion#log#Log.LogTimerEvent(timer, function) abort
   endif
 endfunction
 
-function! g:devotion#log#Log.LogUnexpectedState() abort
+function! g:devotion#log#LogUnexpectedState() abort
   if g:devotion#debug_enabled
     call writefile(['    !!!! unexpected state !!!!'], g:devotion#debug_file, 'a')
     echoerr 'devotion: unexpected state'
   endif
 endfunction
 
-function! g:devotion#log#Log.LogNegativeElapsedTime(time) abort
+function! g:devotion#log#LogNegativeElapsedTime(time) abort
   if g:devotion#debug_enabled
     call writefile(['    !!!! negative elapsed time ' . a:time . ' !!!!'], g:devotion#debug_file, 'a')
     echoerr 'devotion: negative elapsed time'
   endif
 endfunction
-
-lockvar g:devotion#log#Log

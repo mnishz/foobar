@@ -36,15 +36,15 @@ augroup devotion
   autocmd FocusGained * if g:devotion#IsTargetFileType() | call g:devotion#FocusGained() | endif
 augroup END
 
-command! -nargs=+ DevotionRange call g:devotion#DevotionRange(<f-args>)
-command! DevotionToday call g:devotion#DevotionToday()
-" :DevotionLastDay (前日ではなく、最終使用日がいいかも)
-" :DevotionThisWeek
-" :DevotionLastWeek
-" :DevotionThisMonth
-" :DevotionLastMonth
-" :DevotionThisYear
-" :DevotionLastYear
+command! -nargs=+ DevotionRange call g:devotion#Range(<f-args>)
+command! DevotionToday     call g:devotion#Today()
+command! DevotionLastDay   call g:devotion#LastDay()
+command! DevotionThisWeek  call g:devotion#ThisWeek()
+command! DevotionLastWeek  call g:devotion#LastWeek()
+command! DevotionThisMonth call g:devotion#ThisMonth()
+command! DevotionLastMonth call g:devotion#LastMonth()
+command! DevotionThisYear  call g:devotion#ThisYear()
+command! DevotionLastYear  call g:devotion#LastYear()
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
