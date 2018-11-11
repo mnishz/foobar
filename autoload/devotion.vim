@@ -7,7 +7,7 @@ let s:devotion_dir = expand(s:devotion_dir . '/devotion/')
 if !isdirectory(s:devotion_dir) | call mkdir(s:devotion_dir, 'p') | endif
 
 let g:devotion#log_file = expand(s:devotion_dir . 'devotion.log')
-let g:devotion#debug_enabled = v:true  " TODO
+let g:devotion#debug_enabled = v:true
 let g:devotion#debug_file = expand(s:devotion_dir . 'debug.log')
 
 let g:devotion#view_timer_ = g:devotion#timer#Timer.New('view')

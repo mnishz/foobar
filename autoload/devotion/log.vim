@@ -46,8 +46,8 @@ endfunction
 
 function! g:devotion#log#AddUpElapsedTime(start_time, stop_time) abort
   " this function adds up from start_time to stop_time, but excludes stop_time
+  if a:atart_time < 19700101000000 | echoerr 'too small' | return [] | endif
   if a:start_time >= a:stop_time | echoerr 'invalid args' | return [] | endif
-  " TODO: it should be larger than 19700101000000
   let l:logs = readfile(g:devotion#log_file)
   let l:max_idx = len(l:logs) - 1
   let l:first_idx = <SID>TimeSearch(l:logs, a:start_time)
