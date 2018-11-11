@@ -31,24 +31,58 @@ function! s:TimeSearch(logs, time) abort
   return l:btm_idx
 endfunction
 
+function! s:LoadLogFiles(start_time, stop_time) abort
+  let l:logs = []
+  let l:start_year = a:start_time[0:3]
+  let l:stop_year = a:stop_time[0:3]
+  if l:start_year == l:stop_year
+    for month in range(a:start_time[4:5], a:stop_time[4:5])
+      let l:file = g:devotion#log_file_2 . '_' . l:start_year . repeat(0, 2 - len(month)) . month
+      if filereadable(l:file) | let l:logs += readfile(l:file) | endif
+    endfor
+  else
+    for month in range(a:start_time[4:5], 12)
+      let l:file = g:devotion#log_file_2 . '_' . l:start_year . repeat(0, 2 - len(month)) . month
+      if filereadable(l:file) | let l:logs += readfile(l:file) | endif
+    endfor
+    if l:start_year + 1 < l:stop_year
+      for mid_year in range(l:start_year + 1, l:stop_year - 1)
+        for month in range(1, 12)
+          let l:file = g:devotion#log_file_2 . '_' . mid_year . repeat(0, 2 - len(month)) . month
+          if filereadable(l:file) | let l:logs += readfile(l:file) | endif
+        endfor
+      endfor
+    endif
+    for month in range(1, a:stop_time[4:5])
+      let l:file = g:devotion#log_file_2 . '_' . l:stop_year . repeat(0, 2 - len(month)) . month
+      if filereadable(l:file) | let l:logs += readfile(l:file) | endif
+    endfor
+  endif
+  return l:logs
+endfunction
+
 function! g:devotion#log#LogElapsedTime(timer) abort
   if !empty(a:timer.GetElapsedTime())
+    let l:timestamp = eval(<SID>GetDateTimeStr())
     let l:data = {
-          \ 't':  eval(<SID>GetDateTimeStr()),
+          \ 't':  l:timestamp,
           \ 'e':  a:timer.GetElapsedTime(),
           \ 'm':  a:timer.GetMode(),
           \ 'ft': devotion#GetEventBufferFileType(),
           \ 'f':  a:timer.GetFileName(),
           \}
     call writefile([string(l:data)], g:devotion#log_file, 'a')
+    let l:split_file = g:devotion#log_file_2 . '_' . l:timestamp[0:5]
+    call writefile([string(l:data)], l:split_file, 'a')
   endif
 endfunction
 
 function! g:devotion#log#AddUpElapsedTime(start_time, stop_time) abort
   " this function adds up from start_time to stop_time, but excludes stop_time
-  if a:atart_time < 19700101000000 | echoerr 'too small' | return [] | endif
+  if a:start_time < 19700101000000 | echoerr 'too small' | return [] | endif
   if a:start_time >= a:stop_time | echoerr 'invalid args' | return [] | endif
-  let l:logs = readfile(g:devotion#log_file)
+  let l:logs = <SID>LoadLogFiles(a:start_time, a:stop_time)
+  if empty(l:logs) | echoerr 'no entry to load' | return [] | endif
   let l:max_idx = len(l:logs) - 1
   let l:first_idx = <SID>TimeSearch(l:logs, a:start_time)
   let l:last_idx = <SID>TimeSearch(l:logs, a:stop_time)
