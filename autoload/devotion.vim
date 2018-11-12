@@ -62,9 +62,9 @@ function! g:devotion#Today() abort
 endfunction
 
 function! g:devotion#LastDay() abort
-  let l:last_day = g:devotion#log#GetLastDay()
-  if l:last_day == 0 | echo 'no entry...' | return | endif
   let l:today = eval(strftime('%Y%m%d000000'))
+  let l:last_day = g:devotion#log#GetLastDay(l:today)
+  if l:last_day == 0 | echo 'no entry...' | return | endif
   call g:devotion#Range(l:last_day, l:today)
 endfunction
 

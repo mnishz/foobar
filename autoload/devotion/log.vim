@@ -147,16 +147,36 @@ function! g:devotion#log#AddUpElapsedTime(start_time, stop_time) abort
   return l:result_list
 endfunction
 
-function! g:devotion#log#GetLastDay() abort
-  " TODO: for split file
-  let l:logs = readfile(g:devotion#log_file)
-  let l:today = eval(strftime('%Y%m%d000000'))
-  let l:idx = <SID>TimeSearch(l:logs, l:today)
+function! g:devotion#log#GetLastDay(today) abort
   let l:last_day = 0
-  if l:idx != 0
-    let l:last_day = eval(l:logs[l:idx - 1]).t
+  let l:logs = []
+  let l:files = sort(glob(g:devotion#log_file_2 . '*', v:true, v:true))
+  let l:file_found = v:false
+
+  for idx in range(len(l:files) - 1, 0, -1)
+    if l:files[idx][-6:-1] <= a:today[0:5]
+      let l:logs = readfile(l:files[idx])
+      if !empty(l:logs) && eval(l:logs[0]).t < a:today
+        let l:file_found = v:true
+        break
+      endif
+    endif
+  endfor
+
+  if l:file_found
+    let l:idx = <SID>TimeSearch(l:logs, a:today)
+    if l:idx == s:TIME_OVER
+      let l:idx = len(l:logs) - 1
+    elseif (l:idx == s:TIME_UNDER) || (l:idx == 0)
+      echoerr 'unexpected index for the last day'
+      return 0
+    else
+      let l:idx -= 1
+    endif
+    let l:last_day = eval(l:logs[l:idx]).t
     let l:last_day = l:last_day - (l:last_day % 1000000)
   endif
+
   return l:last_day
 endfunction
 
