@@ -7,6 +7,7 @@ let s:devotion_dir = expand(s:devotion_dir . '/devotion/')
 if !isdirectory(s:devotion_dir) | call mkdir(s:devotion_dir, 'p') | endif
 
 let g:devotion#log_file = expand(s:devotion_dir . 'devotion.log')
+let g:devotion#log_file_2 = expand(s:devotion_dir . 'devotion_log')
 let g:devotion#debug_enabled = v:true
 let g:devotion#debug_file = expand(s:devotion_dir . 'debug.log')
 
@@ -35,12 +36,12 @@ endfunction
 " command functions
 
 function! g:devotion#Range(start_time, stop_time) abort
+  let l:data = g:devotion#log#AddUpElapsedTime(a:start_time, a:stop_time)
   echo 'You devoted your following time to Vim between '
   echon a:start_time[0:3] . '/' . a:start_time[4:5] . '/' . a:start_time[6:7] . ' '
   echon a:start_time[8:9] . ':' . a:start_time[10:11] . ':' . a:start_time[12:13] . ' and '
   echon a:stop_time[0:3] . '/' . a:stop_time[4:5] . '/' . a:stop_time[6:7] . ' '
   echon a:stop_time[8:9] . ':' . a:stop_time[10:11] . ':' . a:stop_time[12:13] . ".\n"
-  let l:data = g:devotion#log#AddUpElapsedTime(a:start_time, a:stop_time)
   if empty(l:data)
     echo 'no entry...'
   else
@@ -61,9 +62,9 @@ function! g:devotion#Today() abort
 endfunction
 
 function! g:devotion#LastDay() abort
-  let l:last_day = g:devotion#log#GetLastDay()
-  if l:last_day == 0 | echo 'no entry...' | return | endif
   let l:today = eval(strftime('%Y%m%d000000'))
+  let l:last_day = g:devotion#log#GetLastDay(l:today)
+  if l:last_day == 0 | echo 'no entry...' | return | endif
   call g:devotion#Range(l:last_day, l:today)
 endfunction
 

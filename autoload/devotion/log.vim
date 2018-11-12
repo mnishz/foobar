@@ -31,24 +31,42 @@ function! s:TimeSearch(logs, time) abort
   return l:btm_idx
 endfunction
 
+function! s:LoadLogFiles(start_time, stop_time) abort
+  let l:logs = []
+  let l:start_month = a:start_time[0:5]
+  let l:stop_month = a:stop_time[0:5]
+  let l:files = sort(glob(g:devotion#log_file_2 . '*', v:true, v:true))
+  for idx in range(0, len(l:files) - 1)
+    let l:file_month = l:files[idx][-6:-1]
+    if (l:start_month <= l:file_month) && (l:file_month <= l:stop_month)
+      let l:logs += readfile(l:files[idx])
+    endif
+  endfor
+  return l:logs
+endfunction
+
 function! g:devotion#log#LogElapsedTime(timer) abort
   if !empty(a:timer.GetElapsedTime())
+    let l:timestamp = eval(<SID>GetDateTimeStr())
     let l:data = {
-          \ 't':  eval(<SID>GetDateTimeStr()),
+          \ 't':  l:timestamp,
           \ 'e':  a:timer.GetElapsedTime(),
           \ 'm':  a:timer.GetMode(),
           \ 'ft': devotion#GetEventBufferFileType(),
           \ 'f':  a:timer.GetFileName(),
           \}
     call writefile([string(l:data)], g:devotion#log_file, 'a')
+    let l:split_file = g:devotion#log_file_2 . '_' . l:timestamp[0:5]
+    call writefile([string(l:data)], l:split_file, 'a')
   endif
 endfunction
 
 function! g:devotion#log#AddUpElapsedTime(start_time, stop_time) abort
   " this function adds up from start_time to stop_time, but excludes stop_time
-  if a:start_time < 19700101000000 | echoerr 'too small' | return [] | endif
-  if a:start_time >= a:stop_time | echoerr 'invalid args' | return [] | endif
-  let l:logs = readfile(g:devotion#log_file)
+  if a:start_time < 19700101000000 | echo 'date should be 1970/01/01 or later' | return [] | endif
+  if a:start_time >= a:stop_time | echo 'stop_time should be larger than start_time' | return [] | endif
+  let l:logs = <SID>LoadLogFiles(a:start_time, a:stop_time)
+  if empty(l:logs) | echo 'no log to load...' | return [] | endif
   let l:max_idx = len(l:logs) - 1
   let l:first_idx = <SID>TimeSearch(l:logs, a:start_time)
   let l:last_idx = <SID>TimeSearch(l:logs, a:stop_time)
@@ -84,9 +102,9 @@ function! g:devotion#log#AddUpElapsedTime(start_time, stop_time) abort
   " 5-5         OVER   not found
 
   " 5-1, 5-2, 5-3, 5-4
-  if (l:first_idx == s:TIME_OVER) && (l:last_idx != s:TIME_OVER) | echoerr 'devotion N/A' | endif
+  if (l:first_idx == s:TIME_OVER) && (l:last_idx != s:TIME_OVER) | echoerr 'devotion N/A case' | endif
   " 2-1, 3-1, 3-2, 4-1, 4-2, 4-3
-  if (l:first_idx >= s:TIME_FOUND) && (l:last_idx != s:TIME_OVER) && (l:first_idx > l:last_idx) | echoerr 'devotion N/A' | endif
+  if (l:first_idx >= s:TIME_FOUND) && (l:last_idx != s:TIME_OVER) && (l:first_idx > l:last_idx) | echoerr 'devotion N/A case' | endif
 
   let l:found = v:false
   " 2-2, 2-3, 2-4, 2-5, 3-3, 3-4, 3-5, 4-4, 4-5
@@ -121,6 +139,7 @@ function! g:devotion#log#AddUpElapsedTime(start_time, stop_time) abort
         let l:result_list += [{'file': l:log_dict.f, 'filetype': l:log_dict.ft, 'view': 0.0, 'edit': 0.0}]
         let l:result_idx = -1  " assume it to be the last one
       endif
+      " TODO: loss of trailing digits?
       let l:result_list[l:result_idx][l:log_dict.m] += l:log_dict.e
     endfor
   endif
@@ -128,15 +147,36 @@ function! g:devotion#log#AddUpElapsedTime(start_time, stop_time) abort
   return l:result_list
 endfunction
 
-function! g:devotion#log#GetLastDay() abort
-  let l:logs = readfile(g:devotion#log_file)
-  let l:today = eval(strftime('%Y%m%d000000'))
-  let l:idx = <SID>TimeSearch(l:logs, l:today)
+function! g:devotion#log#GetLastDay(today) abort
   let l:last_day = 0
-  if l:idx != 0
-    let l:last_day = eval(l:logs[l:idx - 1]).t
+  let l:logs = []
+  let l:files = sort(glob(g:devotion#log_file_2 . '*', v:true, v:true))
+  let l:file_found = v:false
+
+  for idx in range(len(l:files) - 1, 0, -1)
+    if l:files[idx][-6:-1] <= a:today[0:5]
+      let l:logs = readfile(l:files[idx])
+      if !empty(l:logs) && eval(l:logs[0]).t < a:today
+        let l:file_found = v:true
+        break
+      endif
+    endif
+  endfor
+
+  if l:file_found
+    let l:idx = <SID>TimeSearch(l:logs, a:today)
+    if l:idx == s:TIME_OVER
+      let l:idx = len(l:logs) - 1
+    elseif (l:idx == s:TIME_UNDER) || (l:idx == 0)
+      echoerr 'unexpected index for the last day'
+      return 0
+    else
+      let l:idx -= 1
+    endif
+    let l:last_day = eval(l:logs[l:idx]).t
     let l:last_day = l:last_day - (l:last_day % 1000000)
   endif
+
   return l:last_day
 endfunction
 
