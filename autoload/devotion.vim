@@ -36,12 +36,12 @@ endfunction
 " command functions
 
 function! g:devotion#Range(start_time, stop_time) abort
+  let l:data = g:devotion#log#AddUpElapsedTime(a:start_time, a:stop_time)
   echo 'You devoted your following time to Vim between '
   echon a:start_time[0:3] . '/' . a:start_time[4:5] . '/' . a:start_time[6:7] . ' '
   echon a:start_time[8:9] . ':' . a:start_time[10:11] . ':' . a:start_time[12:13] . ' and '
   echon a:stop_time[0:3] . '/' . a:stop_time[4:5] . '/' . a:stop_time[6:7] . ' '
   echon a:stop_time[8:9] . ':' . a:stop_time[10:11] . ':' . a:stop_time[12:13] . ".\n"
-  let l:data = g:devotion#log#AddUpElapsedTime(a:start_time, a:stop_time)
   if empty(l:data)
     echo 'no entry...'
   else
