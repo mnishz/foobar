@@ -35,7 +35,7 @@ function! s:LoadLogFiles(start_time, stop_time) abort
   let l:logs = []
   let l:start_month = a:start_time[0:5]
   let l:stop_month = a:stop_time[0:5]
-  let l:files = sort(glob(g:devotion#log_file_2 . '*', v:true, v:true))
+  let l:files = sort(glob(g:devotion#log_file . '*', v:true, v:true))
   for idx in range(0, len(l:files) - 1)
     let l:file_month = l:files[idx][-6:-1]
     if (l:start_month <= l:file_month) && (l:file_month <= l:stop_month)
@@ -55,8 +55,7 @@ function! g:devotion#log#LogElapsedTime(timer) abort
           \ 'ft': devotion#GetEventBufferFileType(),
           \ 'f':  a:timer.GetFileName(),
           \}
-    call writefile([string(l:data)], g:devotion#log_file, 'a')
-    let l:split_file = g:devotion#log_file_2 . '_' . l:timestamp[0:5]
+    let l:split_file = g:devotion#log_file . '_' . l:timestamp[0:5]
     call writefile([string(l:data)], l:split_file, 'a')
   endif
 endfunction
@@ -150,7 +149,7 @@ endfunction
 function! g:devotion#log#GetLastDay(today) abort
   let l:last_day = 0
   let l:logs = []
-  let l:files = sort(glob(g:devotion#log_file_2 . '*', v:true, v:true))
+  let l:files = sort(glob(g:devotion#log_file . '*', v:true, v:true))
   let l:file_found = v:false
 
   for idx in range(len(l:files) - 1, 0, -1)
