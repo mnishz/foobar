@@ -9,16 +9,16 @@ let s:STATE_SUSPENDED   = 'suspended'   | lockvar s:STATE_SUSPENDED
 " class
 
 let g:devotion#timer#Timer = {
-      \ 'mode': '',
+      \ 'timer_type': '',
       \ 'file_name': '',
       \ 'started_time': [],
       \ 'elapsed_time': 0.0,
       \ 'state': s:STATE_NOT_STARTED,
       \ }
 
-function! g:devotion#timer#Timer.New(mode) abort
+function! g:devotion#timer#Timer.New(timer_type) abort
   let l:timer = copy(self)
-  let l:timer.mode = a:mode
+  let l:timer.timer_type = a:timer_type
   return l:timer
 endfunction
 
@@ -45,13 +45,14 @@ function! g:devotion#timer#Timer.Start() abort
   call g:devotion#log#LogTimerEvent(self, 'Start')
   if !self.IsSameFileName()
     call g:devotion#log#LogUnexpectedState(self)
-    let self.file_name = devotion#GetEventBufferFileName()
-  elseif self.state != s:STATE_NOT_STARTED
-    call g:devotion#log#LogUnexpectedState(self)
+  else
+    if self.state != s:STATE_NOT_STARTED
+      call g:devotion#log#LogUnexpectedState(self)
+    endif
+    " continue regardless of state error for Start()
+    let self.started_time = reltime()
+    let self.state = s:STATE_STARTED
   endif
-  " continue regardless of error for Start()
-  let self.started_time = reltime()
-  let self.state = s:STATE_STARTED
 endfunction
 
 function! g:devotion#timer#Timer.Stop() abort
@@ -60,7 +61,7 @@ function! g:devotion#timer#Timer.Stop() abort
     call g:devotion#log#LogUnexpectedState(self)
   else
     " add only in normal case in contrast to Start()
-    call self.CalcAndAddElapsedTime()
+    call self.CalcAndAddElapsedTime_()
     let self.state = s:STATE_NOT_STARTED
   endif
 endfunction
@@ -74,7 +75,7 @@ function! g:devotion#timer#Timer.SuspendIfNeeded() abort
       " do nothing
     elseif self.state == s:STATE_STARTED
       " add only in normal case in contrast to Restart()
-      call self.CalcAndAddElapsedTime()
+      call self.CalcAndAddElapsedTime_()
       let self.state = s:STATE_SUSPENDED
     endif
   endif
@@ -82,15 +83,19 @@ endfunction
 
 function! g:devotion#timer#Timer.RestartIfNeeded() abort
   call g:devotion#log#LogTimerEvent(self, 'Restart')
-  if !self.IsSameFileName() || (self.state == s:STATE_STARTED)
+  if !self.IsSameFileName()
     call g:devotion#log#LogUnexpectedState(self)
-  endif
-  " continue regardless of error for Restart()
-  if self.state == s:STATE_NOT_STARTED
-    " do nothing
-  elseif self.state == s:STATE_SUSPENDED
-    let self.started_time = reltime()
-    let self.state = s:STATE_STARTED
+  else
+    if self.state == s:STATE_STARTED
+      call g:devotion#log#LogUnexpectedState(self)
+    endif
+    " continue regardless of state error for Restart()
+    if self.state == s:STATE_NOT_STARTED
+      " do nothing
+    else
+      let self.started_time = reltime()
+      let self.state = s:STATE_STARTED
+    endif
   endif
 endfunction
 
@@ -110,8 +115,8 @@ function! g:devotion#timer#Timer.GetElapsedTimeWoCheck() abort
   return self.elapsed_time
 endfunction
 
-function! g:devotion#timer#Timer.GetMode() abort
-  return self.mode
+function! g:devotion#timer#Timer.GetTimerType() abort
+  return self.timer_type
 endfunction
 
 function! g:devotion#timer#Timer.GetFileName() abort
@@ -122,7 +127,7 @@ function! g:devotion#timer#Timer.GetState() abort
   return self.state
 endfunction
 
-function! g:devotion#timer#Timer.CalcAndAddElapsedTime() abort
+function! g:devotion#timer#Timer.CalcAndAddElapsedTime_() abort
   let l:curr_elapsed_time = reltimefloat(reltime(self.started_time))
   if l:curr_elapsed_time >= 0.0
     let self.elapsed_time += l:curr_elapsed_time
@@ -134,7 +139,7 @@ endfunction
 function! g:devotion#timer#Timer.IsSameFileName() abort
   if !empty(self.file_name) && (self.file_name ==# devotion#GetEventBufferFileName())
     return v:true
-  elseif (self.mode ==# 'vim') && (self.file_name ==# 'Vim')
+  elseif (self.timer_type ==# 'vim') && (self.file_name ==# 'Vim')
     return v:true
   else
     return v:false

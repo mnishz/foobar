@@ -19,6 +19,7 @@ scriptencoding utf-8
 " すぐに解決するのが難しい問題はTODOとしてGitHubに書いておいてよいかもしれない
 " TODO: 情報落ち
 " TODO: 拡張子もつけられるようにする
+" TODO: 結果のソート
 
 " 日本語は下のほうにあると書いて、英語 -> 日本語の順に書く
 " pure Vim script

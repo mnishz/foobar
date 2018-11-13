@@ -128,24 +128,29 @@ endfunction
 
 " autocmd functions
 "
-" view_timer_  autocmd event       edit_timer_
+" autocmd event       vim_timer_  view_timer_  edit_timer_
 "
-" Initialize   BufEnter            Initialize
-" Start
-"  |
-" Suspend      FocusLost
-"  *
-" Restart      FocusGained
-"  |
-" Stop         InsertEnter         Start
-"                                   |
-"              FocusLost           Suspend
-"                                   *
-"              FocusGained         Restart
-"                                   |
-" Start        EnsertLeave         Stop
-"  |
-" Stop         BufLeave/BufUnload
+" VimEnter            Initialize
+"                     Start
+"                      |
+" BufEnter             |          Initialize   Initialize
+"                      |          Start
+"                      |           |
+" FocusLost           Suspend     Suspend
+"                      *           *
+" FocusGained         Restart     Restart
+"                      |           |
+" InsertEnter          |          Stop         Start
+"                      |                        |
+" FocusLost           Suspend                  Suspend
+"                      *                        *
+" FocusGained         Restart                  Restart
+"                      |                        |
+" EnsertLeave          |          Start        Stop
+"                      |           |
+" BufLeave/BufUnload   |          Stop/Log     Log
+"                      |
+" VimLeave            Stop/Log
 
 function! g:devotion#BufEnter() abort
   call g:devotion#log#LogAutocmdEvent('BufEnter   ')

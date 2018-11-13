@@ -51,7 +51,7 @@ function! g:devotion#log#LogElapsedTime(timer) abort
     let l:data = {
           \ 't':  l:timestamp,
           \ 'e':  a:timer.GetElapsedTime(),
-          \ 'm':  a:timer.GetMode(),
+          \ 'tt':  a:timer.GetTimerType(),
           \ 'ft': devotion#GetEventBufferFileType(),
           \ 'f':  a:timer.GetFileName(),
           \}
@@ -139,7 +139,7 @@ function! g:devotion#log#AddUpElapsedTime(start_time, stop_time) abort
         let l:result_idx = -1  " assume it to be the last one
       endif
       " TODO: loss of trailing digits?
-      let l:result_list[l:result_idx][l:log_dict.m] += l:log_dict.e
+      let l:result_list[l:result_idx][l:log_dict.tt] += l:log_dict.e
     endfor
   endif
 
@@ -190,7 +190,7 @@ endfunction
 
 function! g:devotion#log#LogTimerEvent(timer, function) abort
   if g:devotion#debug_enabled
-    let l:data = '  ' . a:timer.GetMode() . ' ' . a:function . ' '
+    let l:data = '  ' . a:timer.GetTimerType() . ' ' . a:function . ' '
     let l:data .= a:timer.GetFileName() . ' ' . a:timer.GetState() . ' '
     let l:data .= string(a:timer.GetElapsedTimeWoCheck())
     call writefile([l:data], g:devotion#debug_file, 'a')
