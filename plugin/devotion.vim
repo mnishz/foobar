@@ -13,7 +13,6 @@ set cpo&vim
 
 scriptencoding utf-8
 
-" TODO: vimの総起動時間もあると比較ができて良さそう
 " TODO: release前にdebugを落とす
 " TODO: テストの追加、今日の日付を取得するデバッグ用関数(好きに変えられる)があるといいかも
 " TODO: Linux
@@ -26,13 +25,15 @@ scriptencoding utf-8
 
 augroup devotion
   autocmd!
-  autocmd BufEnter *    if g:devotion#IsTargetFileType() | call g:devotion#BufEnter()    | endif
-  autocmd BufLeave *    if g:devotion#IsTargetFileType() | call g:devotion#BufLeave()    | endif
-  autocmd BufUnload *   if g:devotion#IsTargetFileType() | call g:devotion#BufUnload()   | endif
+  autocmd BufEnter    * if g:devotion#IsTargetFileType() | call g:devotion#BufEnter()    | endif
+  autocmd BufLeave    * if g:devotion#IsTargetFileType() | call g:devotion#BufLeave()    | endif
+  autocmd BufUnload   * if g:devotion#IsTargetFileType() | call g:devotion#BufUnload()   | endif
   autocmd InsertEnter * if g:devotion#IsTargetFileType() | call g:devotion#InsertEnter() | endif
   autocmd InsertLeave * if g:devotion#IsTargetFileType() | call g:devotion#InsertLeave() | endif
-  autocmd FocusLost *   if g:devotion#IsTargetFileType() | call g:devotion#FocusLost()   | endif
+  autocmd FocusLost   * if g:devotion#IsTargetFileType() | call g:devotion#FocusLost()   | endif
   autocmd FocusGained * if g:devotion#IsTargetFileType() | call g:devotion#FocusGained() | endif
+  autocmd VimEnter    * call g:devotion#VimEnter()
+  autocmd VimLeave    * call g:devotion#VimLeave()
 augroup END
 
 command! -nargs=+ DevotionRange call g:devotion#Range(<f-args>)

@@ -10,6 +10,7 @@ let g:devotion#log_file = expand(s:devotion_dir . 'devotion_log')
 let g:devotion#debug_enabled = v:true
 let g:devotion#debug_file = expand(s:devotion_dir . 'debug_log')
 
+let g:devotion#vim_timer_  = g:devotion#timer#Timer.New('vim')
 let g:devotion#view_timer_ = g:devotion#timer#Timer.New('view')
 let g:devotion#edit_timer_ = g:devotion#timer#Timer.New('edit')
 
@@ -45,9 +46,15 @@ function! g:devotion#Range(start_time, stop_time) abort
     echo 'no entry...'
   else
     for entry in l:data
-      echo entry.file . ' (filetype: ' . entry.filetype . ')'
-      echo '  Viewed: ' . string(entry.view)
-      echo '  Edited: ' . string(entry.edit)
+      if entry.file ==# 'Vim'
+        echo entry.file
+        " TODO: wording
+        echo '  Opened: ' . string(entry.vim)
+      else
+        echo entry.file . ' (filetype: ' . entry.filetype . ')'
+        echo '  Viewed: ' . string(entry.view)
+        echo '  Edited: ' . string(entry.edit)
+      endif
     endfor
   endif
 endfunction
@@ -194,4 +201,17 @@ function! g:devotion#FocusGained() abort
   call g:devotion#log#LogAutocmdEvent('FocusGained')
   call g:devotion#view_timer_.RestartIfNeeded()
   call g:devotion#edit_timer_.RestartIfNeeded()
+endfunction
+
+function! g:devotion#VimEnter() abort
+  call g:devotion#log#LogAutocmdEvent('VimEnter   ')
+  call g:devotion#vim_timer_.Initialize('Vim')
+  call g:devotion#vim_timer_.Start()
+endfunction
+
+function! g:devotion#VimLeave() abort
+  call g:devotion#log#LogAutocmdEvent('VimLeave   ')
+  call g:devotion#vim_timer_.Stop()
+  call g:devotion#log#LogElapsedTime(g:devotion#vim_timer_)
+  call g:devotion#vim_timer_.Clear()
 endfunction

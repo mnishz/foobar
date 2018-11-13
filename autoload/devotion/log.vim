@@ -135,7 +135,7 @@ function! g:devotion#log#AddUpElapsedTime(start_time, stop_time) abort
         endif
       endfor
       if l:result_idx == l:NOT_FOUND
-        let l:result_list += [{'file': l:log_dict.f, 'filetype': l:log_dict.ft, 'view': 0.0, 'edit': 0.0}]
+        let l:result_list += [{'file': l:log_dict.f, 'filetype': l:log_dict.ft, 'view': 0.0, 'edit': 0.0, 'vim': 0.0}]
         let l:result_idx = -1  " assume it to be the last one
       endif
       " TODO: loss of trailing digits?

@@ -134,6 +134,8 @@ endfunction
 function! g:devotion#timer#Timer.IsSameFileName() abort
   if !empty(self.file_name) && (self.file_name ==# devotion#GetEventBufferFileName())
     return v:true
+  elseif (self.mode ==# 'vim') && (self.file_name ==# 'Vim')
+    return v:true
   else
     return v:false
   endif
