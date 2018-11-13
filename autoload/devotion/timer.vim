@@ -25,7 +25,7 @@ endfunction
 function! g:devotion#timer#Timer.Initialize(file_name) abort
   call g:devotion#log#LogTimerEvent(self, 'Initialize')
   if !empty(self.file_name)
-    call g:devotion#log#LogUnexpectedState()
+    call g:devotion#log#LogUnexpectedState(self)
   endif
   call self.Clear()
   let self.file_name = a:file_name
@@ -34,7 +34,7 @@ endfunction
 function! g:devotion#timer#Timer.Clear() abort
   call g:devotion#log#LogTimerEvent(self, 'Clear')
   if self.state != s:STATE_NOT_STARTED
-    call g:devotion#log#LogUnexpectedState()
+    call g:devotion#log#LogUnexpectedState(self)
   endif
   let self.file_name = ''
   let self.elapsed_time = 0.0
@@ -44,10 +44,10 @@ endfunction
 function! g:devotion#timer#Timer.Start() abort
   call g:devotion#log#LogTimerEvent(self, 'Start')
   if !self.IsSameFileName()
-    call g:devotion#log#LogUnexpectedState()
+    call g:devotion#log#LogUnexpectedState(self)
     let self.file_name = devotion#GetEventBufferFileName()
   elseif self.state != s:STATE_NOT_STARTED
-    call g:devotion#log#LogUnexpectedState()
+    call g:devotion#log#LogUnexpectedState(self)
   endif
   " continue regardless of error for Start()
   let self.started_time = reltime()
@@ -57,7 +57,7 @@ endfunction
 function! g:devotion#timer#Timer.Stop() abort
   call g:devotion#log#LogTimerEvent(self, 'Stop')
   if !self.IsSameFileName() || (self.state != s:STATE_STARTED)
-    call g:devotion#log#LogUnexpectedState()
+    call g:devotion#log#LogUnexpectedState(self)
   else
     " add only in normal case in contrast to Start()
     call self.CalcAndAddElapsedTime()
@@ -68,7 +68,7 @@ endfunction
 function! g:devotion#timer#Timer.SuspendIfNeeded() abort
   call g:devotion#log#LogTimerEvent(self, 'Suspend')
   if !self.IsSameFileName() || (self.state == s:STATE_SUSPENDED)
-    call g:devotion#log#LogUnexpectedState()
+    call g:devotion#log#LogUnexpectedState(self)
   else
     if self.state == s:STATE_NOT_STARTED
       " do nothing
@@ -83,7 +83,7 @@ endfunction
 function! g:devotion#timer#Timer.RestartIfNeeded() abort
   call g:devotion#log#LogTimerEvent(self, 'Restart')
   if !self.IsSameFileName() || (self.state == s:STATE_STARTED)
-    call g:devotion#log#LogUnexpectedState()
+    call g:devotion#log#LogUnexpectedState(self)
   endif
   " continue regardless of error for Restart()
   if self.state == s:STATE_NOT_STARTED
@@ -97,10 +97,10 @@ endfunction
 function! g:devotion#timer#Timer.GetElapsedTime() abort
   call g:devotion#log#LogTimerEvent(self, 'GetElapsed')
   if !self.IsSameFileName()
-    call g:devotion#log#LogUnexpectedState()
+    call g:devotion#log#LogUnexpectedState(self)
   else
     if self.state != s:STATE_NOT_STARTED
-      call g:devotion#log#LogUnexpectedState()
+      call g:devotion#log#LogUnexpectedState(self)
     endif
     return self.elapsed_time
   endif

@@ -197,9 +197,10 @@ function! g:devotion#log#LogTimerEvent(timer, function) abort
   endif
 endfunction
 
-function! g:devotion#log#LogUnexpectedState() abort
+function! g:devotion#log#LogUnexpectedState(timer) abort
   if g:devotion#debug_enabled
     call writefile(['    !!!! unexpected state !!!!'], g:devotion#debug_file, 'a')
+    call writefile(['    ' . string(a:timer)], g:devotion#debug_file, 'a')
     echoerr 'devotion: unexpected state'
   endif
 endfunction
