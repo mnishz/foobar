@@ -14,6 +14,8 @@ let g:devotion#vim_timer_  = g:devotion#timer#Timer.New('vim')
 let g:devotion#view_timer_ = g:devotion#timer#Timer.New('view')
 let g:devotion#edit_timer_ = g:devotion#timer#Timer.New('edit')
 
+let g:devotion#just_after_VimEnter_ = v:false  " workaround
+
 " utilities
 
 function! g:devotion#GetEventBufferFileName()
@@ -193,20 +195,31 @@ endfunction
 
 function! g:devotion#FocusLost() abort
   call g:devotion#log#LogAutocmdEvent('FocusLost  ')
-  call g:devotion#view_timer_.SuspendIfNeeded()
-  call g:devotion#edit_timer_.SuspendIfNeeded()
+  call g:devotion#vim_timer_.SuspendIfNeeded()
+  if g:devotion#IsTargetFileType()
+    call g:devotion#view_timer_.SuspendIfNeeded()
+    call g:devotion#edit_timer_.SuspendIfNeeded()
+  endif
 endfunction
 
 function! g:devotion#FocusGained() abort
   call g:devotion#log#LogAutocmdEvent('FocusGained')
-  call g:devotion#view_timer_.RestartIfNeeded()
-  call g:devotion#edit_timer_.RestartIfNeeded()
+  if !g:devotion#just_after_VimEnter_  " workaround
+    call g:devotion#vim_timer_.RestartIfNeeded()
+  else
+    let g:devotion#just_after_VimEnter_ = v:false
+  endif
+  if g:devotion#IsTargetFileType()
+    call g:devotion#view_timer_.RestartIfNeeded()
+    call g:devotion#edit_timer_.RestartIfNeeded()
+  endif
 endfunction
 
 function! g:devotion#VimEnter() abort
   call g:devotion#log#LogAutocmdEvent('VimEnter   ')
   call g:devotion#vim_timer_.Initialize('Vim')
   call g:devotion#vim_timer_.Start()
+  let g:devotion#just_after_VimEnter_ = v:true  " workaround
 endfunction
 
 function! g:devotion#VimLeave() abort

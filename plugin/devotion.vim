@@ -18,6 +18,7 @@ scriptencoding utf-8
 " TODO: Linux
 " すぐに解決するのが難しい問題はTODOとしてGitHubに書いておいてよいかもしれない
 " TODO: 情報落ち
+" TODO: 拡張子もつけられるようにする
 
 " 日本語は下のほうにあると書いて、英語 -> 日本語の順に書く
 " pure Vim script
@@ -30,8 +31,8 @@ augroup devotion
   autocmd BufUnload   * if g:devotion#IsTargetFileType() | call g:devotion#BufUnload()   | endif
   autocmd InsertEnter * if g:devotion#IsTargetFileType() | call g:devotion#InsertEnter() | endif
   autocmd InsertLeave * if g:devotion#IsTargetFileType() | call g:devotion#InsertLeave() | endif
-  autocmd FocusLost   * if g:devotion#IsTargetFileType() | call g:devotion#FocusLost()   | endif
-  autocmd FocusGained * if g:devotion#IsTargetFileType() | call g:devotion#FocusGained() | endif
+  autocmd FocusLost   * call g:devotion#FocusLost()    " check filetype in the function
+  autocmd FocusGained * call g:devotion#FocusGained()  " check filetype in the function
   autocmd VimEnter    * call g:devotion#VimEnter()
   autocmd VimLeave    * call g:devotion#VimLeave()
 augroup END
