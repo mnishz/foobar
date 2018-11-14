@@ -13,18 +13,6 @@ set cpo&vim
 
 scriptencoding utf-8
 
-" TODO: release前にdebugを落とす
-" TODO: テストの追加、今日の日付を取得するデバッグ用関数(好きに変えられる)があるといいかも
-" TODO: Linux
-" すぐに解決するのが難しい問題はTODOとしてGitHubに書いておいてよいかもしれない
-" TODO: 情報落ち
-" TODO: 拡張子もつけられるようにする
-" TODO: 結果のソート
-
-" 日本語は下のほうにあると書いて、英語 -> 日本語の順に書く
-" pure Vim script
-" 不自然な言葉遣いや表現があったら教えてね
-
 augroup devotion
   autocmd!
   autocmd BufEnter    * if g:devotion#IsTargetFileType() | call g:devotion#BufEnter()    | endif
