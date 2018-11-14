@@ -1,13 +1,15 @@
 # TODOs
 ## High
-- �e�X�g�I
-  - �����̓��t���擾����f�o�b�O�p�֐�(�D���ɕς�����)������Ƃ�������
-- Release�O��debug�𗎂Ƃ�
-- Linux�ł̓���m�F
+- テスト！
+  - 今日の日付を取得するデバッグ用関数(好きに変えられる)があるといいかも
+- Release前にdebugを落とす
+- Linuxでの動作確認
+## Mid
+- ずっと起動している場合でも、適当な時間に書き出す
 ## Low
-- ��񗎂�
-- �g���q�t������悤�ɂ���H
+- 情報落ち
+- 拡張子付けられるようにする？
 # Notes
-- README, �p�� -> ���{��H ���{�� -> �p��H
+- README, 英語 -> 日本語？ 日本語 -> 英語？
 - Pure Vim script
-- �p�ꎩ�M�Ȃ�
+- 英語自信ない
