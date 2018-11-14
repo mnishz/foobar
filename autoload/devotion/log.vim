@@ -6,7 +6,7 @@ let s:TIME_FOUND = 0  | lockvar s:TIME_FOUND
 let s:TIME_UNDER = -1 | lockvar s:TIME_UNDER
 let s:TIME_OVER  = -2 | lockvar s:TIME_OVER
 
-" utilities
+" local utilities
 
 function! s:GetDateTimeStr() abort
   return strftime('%Y%m%d%H%M%S')
@@ -33,17 +33,19 @@ endfunction
 
 function! s:LoadLogFiles(start_time, stop_time) abort
   let l:logs = []
-  let l:start_month = a:start_time[0:5]
-  let l:stop_month = a:stop_time[0:5]
+  let l:first_month = a:start_time[0:5]
+  let l:last_month = a:stop_time[0:5]
   let l:files = sort(glob(g:devotion#log_file . '*', v:true, v:true))
-  for idx in range(0, len(l:files) - 1)
+  for idx in range(len(l:files))
     let l:file_month = l:files[idx][-6:-1]
-    if (l:start_month <= l:file_month) && (l:file_month <= l:stop_month)
+    if (l:first_month <= l:file_month) && (l:file_month <= l:last_month)
       let l:logs += readfile(l:files[idx])
     endif
   endfor
   return l:logs
 endfunction
+
+" log related functions
 
 function! g:devotion#log#LogElapsedTime(timer) abort
   if !empty(a:timer.GetElapsedTime())
@@ -70,8 +72,9 @@ function! g:devotion#log#AddUpElapsedTime(start_time, stop_time) abort
   let l:first_idx = <SID>TimeSearch(l:logs, a:start_time)
   let l:last_idx = <SID>TimeSearch(l:logs, a:stop_time)
 
-  " code to exclude stop_time, ummmmmmm....
-  " we don't need the following code if we can covert date/time -> Unix time
+  " code to exclude stop_time, ummmmmmm...
+  " if we had a function to convert date/time -> Unix time, we wouldn't need
+  " the following code...
 
   " no   start  stop   any entry  first  last
   " 1-1  UNDER  UNDER  not found
@@ -135,11 +138,19 @@ function! g:devotion#log#AddUpElapsedTime(start_time, stop_time) abort
         endif
       endfor
       if l:result_idx == l:NOT_FOUND
-        let l:result_list += [{'file': l:log_dict.f, 'filetype': l:log_dict.ft, 'view': 0.0, 'edit': 0.0, 'vim': 0.0}]
+        let l:result_list += [{
+              \ 'file': l:log_dict.f,
+              \ 'filetype': l:log_dict.ft,
+              \ 'view': 0.0,
+              \ 'edit': 0.0,
+              \ 'vim': 0.0,
+              \ 'total': 0.0
+              \ }]
         let l:result_idx = -1  " assume it to be the last one
       endif
       " TODO: loss of trailing digits?
       let l:result_list[l:result_idx][l:log_dict.tt] += l:log_dict.e
+      let l:result_list[l:result_idx].total += l:log_dict.e
     endfor
   endif
 

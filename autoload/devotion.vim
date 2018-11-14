@@ -16,13 +16,13 @@ let g:devotion#edit_timer_ = g:devotion#timer#Timer.New('edit')
 
 let s:just_after_VimEnter = v:false  " workaround
 
-" utilities
+" global utilities
 
-function! g:devotion#GetEventBufferFileName()
+function! g:devotion#GetEventBufferFileName() abort
   return expand('<afile>:p')
 endfunction
 
-function! g:devotion#GetEventBufferFileType()
+function! g:devotion#GetEventBufferFileType() abort
   return getbufvar(str2nr(expand('<abuf>')), '&filetype')
 endfunction
 
@@ -32,6 +32,18 @@ function! g:devotion#IsTargetFileType() abort
     return v:true
   else
     return v:false
+  endif
+endfunction
+
+" local utilities
+
+function! s:CompareTotalTime(lhs, rhs) abort
+  if a:lhs.total == a:rhs.total
+    return 0
+  elseif a:lhs.total < a:rhs.total
+    return 1
+  else
+    return -1
   endif
 endfunction
 
@@ -47,6 +59,7 @@ function! g:devotion#Range(start_time, stop_time) abort
   if empty(l:data)
     echo 'no entry...'
   else
+    call sort(l:data, 's:CompareTotalTime')
     for entry in l:data
       if entry.file ==# 'Vim'
         echo entry.file
