@@ -36,10 +36,10 @@ function! s:LoadLogFiles(start_time, stop_time) abort
   let l:first_month = a:start_time[0:5]
   let l:last_month = a:stop_time[0:5]
   let l:files = sort(glob(g:devotion#log_file . '*', v:true, v:true))
-  for idx in range(len(l:files))
-    let l:file_month = l:files[idx][-6:-1]
+  for file in l:files
+    let l:file_month = file[-6:-1]
     if (l:first_month <= l:file_month) && (l:file_month <= l:last_month)
-      let l:logs += readfile(l:files[idx])
+      let l:logs += readfile(file)
     endif
   endfor
   return l:logs
