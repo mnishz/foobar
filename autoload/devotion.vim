@@ -27,8 +27,9 @@ function! g:devotion#GetEventBufferFileType() abort
 endfunction
 
 function! g:devotion#IsTargetFileType() abort
+  let l:isFileExist = filereadable(g:devotion#GetEventBufferFileName())
   let l:filetype = devotion#GetEventBufferFileType()
-  if (l:filetype ==# 'vim') || (l:filetype ==# 'help')
+  if l:isFileExist && ((l:filetype ==# 'vim') || (l:filetype ==# 'help'))
     return v:true
   else
     return v:false
