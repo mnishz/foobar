@@ -26,10 +26,14 @@ function! g:devotion#GetEventBufferFileType() abort
   return getbufvar(str2nr(expand('<abuf>')), '&filetype')
 endfunction
 
+function! g:devotion#GetEventBufType() abort
+  return getbufvar(str2nr(expand('<abuf>')), '&buftype')
+endfunction
+
 function! g:devotion#IsTargetFileType() abort
-  let l:isFileExist = filereadable(g:devotion#GetEventBufferFileName())
-  let l:filetype = devotion#GetEventBufferFileType()
-  if l:isFileExist && ((l:filetype ==# 'vim') || (l:filetype ==# 'help'))
+  let l:bt = devotion#GetEventBufType()
+  let l:ft = devotion#GetEventBufferFileType()
+  if (empty(l:bt) || (l:bt ==# 'help')) && ((l:ft ==# 'vim') || (l:ft ==# 'help'))
     return v:true
   else
     return v:false

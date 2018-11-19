@@ -12,4 +12,5 @@
 # Notes
 - README, 英語 -> 日本語？ 日本語 -> 英語？
 - Pure Vim script
+- stand-alone
 - 英語自信ない
