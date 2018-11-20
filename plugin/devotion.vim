@@ -15,13 +15,13 @@ scriptencoding utf-8
 
 augroup devotion
   autocmd!
-  autocmd BufEnter    * if g:devotion#IsTargetFileType() | call g:devotion#BufEnter()    | endif
-  autocmd BufLeave    * if g:devotion#IsTargetFileType() | call g:devotion#BufLeave()    | endif
-  autocmd BufUnload   * if g:devotion#IsTargetFileType() | call g:devotion#BufUnload()   | endif
-  autocmd InsertEnter * if g:devotion#IsTargetFileType() | call g:devotion#InsertEnter() | endif
-  autocmd InsertLeave * if g:devotion#IsTargetFileType() | call g:devotion#InsertLeave() | endif
-  autocmd FocusLost   * call g:devotion#FocusLost()    " check filetype in the function
-  autocmd FocusGained * call g:devotion#FocusGained()  " check filetype in the function
+  autocmd BufEnter    * if g:devotion#IsTargetFile() | call g:devotion#BufEnter()    | endif
+  autocmd BufLeave    * if g:devotion#IsTargetFile() | call g:devotion#BufLeave()    | endif
+  autocmd BufUnload   * if g:devotion#IsTargetFile() | call g:devotion#BufUnload()   | endif
+  autocmd InsertEnter * if g:devotion#IsTargetFile() | call g:devotion#InsertEnter() | endif
+  autocmd InsertLeave * if g:devotion#IsTargetFile() | call g:devotion#InsertLeave() | endif
+  autocmd FocusLost   * call g:devotion#FocusLost()    " check file in the function
+  autocmd FocusGained * call g:devotion#FocusGained()  " check file in the function
   autocmd VimEnter    * call g:devotion#VimEnter()
   autocmd VimLeave    * call g:devotion#VimLeave()
 augroup END

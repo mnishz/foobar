@@ -30,7 +30,7 @@ function! g:devotion#GetEventBufType() abort
   return getbufvar(str2nr(expand('<abuf>')), '&buftype')
 endfunction
 
-function! g:devotion#IsTargetFileType() abort
+function! g:devotion#IsTargetFile() abort
   let l:bt = devotion#GetEventBufType()
   let l:ft = devotion#GetEventBufferFileType()
   if (empty(l:bt) || (l:bt ==# 'help')) && ((l:ft ==# 'vim') || (l:ft ==# 'help'))
@@ -219,7 +219,7 @@ endfunction
 function! g:devotion#FocusLost() abort
   call g:devotion#log#LogAutocmdEvent('FocusLost  ')
   call g:devotion#vim_timer_.SuspendIfNeeded()
-  if g:devotion#IsTargetFileType()
+  if g:devotion#IsTargetFile()
     call g:devotion#view_timer_.SuspendIfNeeded()
     call g:devotion#edit_timer_.SuspendIfNeeded()
   endif
@@ -232,7 +232,7 @@ function! g:devotion#FocusGained() abort
   else
     let s:just_after_VimEnter = v:false
   endif
-  if g:devotion#IsTargetFileType()
+  if g:devotion#IsTargetFile()
     call g:devotion#view_timer_.RestartIfNeeded()
     call g:devotion#edit_timer_.RestartIfNeeded()
   endif
