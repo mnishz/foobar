@@ -10,9 +10,9 @@ let g:devotion#log_file = expand(s:devotion_dir . 'devotion_log')
 let g:devotion#debug_enabled = v:true
 let g:devotion#debug_file = expand(s:devotion_dir . 'debug_log')
 
-let g:devotion#vim_timer_  = g:devotion#timer#Timer.New('vim')
-let g:devotion#view_timer_ = g:devotion#timer#Timer.New('view')
-let g:devotion#edit_timer_ = g:devotion#timer#Timer.New('edit')
+let s:vim_timer  = g:devotion#timer#Timer.New('vim')
+let s:view_timer = g:devotion#timer#Timer.New('view')
+let s:edit_timer = g:devotion#timer#Timer.New('edit')
 
 let s:just_after_VimEnter = v:false  " workaround
 
@@ -146,7 +146,7 @@ endfunction
 
 " autocmd functions
 "
-" autocmd event       vim_timer_  view_timer_  edit_timer_
+" autocmd event       vim_timer   view_timer   edit_timer
 "
 " VimEnter            Initialize
 "                     Start
@@ -172,18 +172,18 @@ endfunction
 
 function! g:devotion#BufEnter() abort
   call g:devotion#log#LogAutocmdEvent('BufEnter   ')
-  call g:devotion#view_timer_.Initialize(devotion#GetEventBufferFileName())
-  call g:devotion#view_timer_.Start()
-  call g:devotion#edit_timer_.Initialize(devotion#GetEventBufferFileName())
+  call s:view_timer.Initialize(devotion#GetEventBufferFileName())
+  call s:view_timer.Start()
+  call s:edit_timer.Initialize(devotion#GetEventBufferFileName())
 endfunction
 
 function! g:devotion#BufLeave() abort
   call g:devotion#log#LogAutocmdEvent('BufLeave   ')
-  call g:devotion#view_timer_.Stop()
-  call g:devotion#log#LogElapsedTime(g:devotion#view_timer_)
-  call g:devotion#log#LogElapsedTime(g:devotion#edit_timer_)
-  call g:devotion#view_timer_.Clear()
-  call g:devotion#edit_timer_.Clear()
+  call s:view_timer.Stop()
+  call g:devotion#log#LogElapsedTime(s:view_timer)
+  call g:devotion#log#LogElapsedTime(s:edit_timer)
+  call s:view_timer.Clear()
+  call s:edit_timer.Clear()
 endfunction
 
 function! g:devotion#BufUnload() abort
@@ -193,61 +193,61 @@ function! g:devotion#BufUnload() abort
   "   BufEnter -> BufUnload for the target file
   "   BufEnter -> BufUnload for another file -> BufUnload for the target file
   " just check the file name
-  if g:devotion#view_timer_.IsSameFileName()
-    call g:devotion#view_timer_.Stop()
-    call g:devotion#log#LogElapsedTime(g:devotion#view_timer_)
-    call g:devotion#view_timer_.Clear()
+  if s:view_timer.IsSameFileName()
+    call s:view_timer.Stop()
+    call g:devotion#log#LogElapsedTime(s:view_timer)
+    call s:view_timer.Clear()
   endif
-  if g:devotion#edit_timer_.IsSameFileName()
-    call g:devotion#log#LogElapsedTime(g:devotion#edit_timer_)
-    call g:devotion#edit_timer_.Clear()
+  if s:edit_timer.IsSameFileName()
+    call g:devotion#log#LogElapsedTime(s:edit_timer)
+    call s:edit_timer.Clear()
   endif
 endfunction
 
 function! g:devotion#InsertEnter() abort
   call g:devotion#log#LogAutocmdEvent('InsertEnter')
-  call g:devotion#view_timer_.Stop()
-  call g:devotion#edit_timer_.Start()
+  call s:view_timer.Stop()
+  call s:edit_timer.Start()
 endfunction
 
 function! g:devotion#InsertLeave() abort
   call g:devotion#log#LogAutocmdEvent('InsertLeave')
-  call g:devotion#view_timer_.Start()
-  call g:devotion#edit_timer_.Stop()
+  call s:view_timer.Start()
+  call s:edit_timer.Stop()
 endfunction
 
 function! g:devotion#FocusLost() abort
   call g:devotion#log#LogAutocmdEvent('FocusLost  ')
-  call g:devotion#vim_timer_.SuspendIfNeeded()
+  call s:vim_timer.SuspendIfNeeded()
   if g:devotion#IsTargetFile()
-    call g:devotion#view_timer_.SuspendIfNeeded()
-    call g:devotion#edit_timer_.SuspendIfNeeded()
+    call s:view_timer.SuspendIfNeeded()
+    call s:edit_timer.SuspendIfNeeded()
   endif
 endfunction
 
 function! g:devotion#FocusGained() abort
   call g:devotion#log#LogAutocmdEvent('FocusGained')
   if !s:just_after_VimEnter  " workaround
-    call g:devotion#vim_timer_.RestartIfNeeded()
+    call s:vim_timer.RestartIfNeeded()
   else
     let s:just_after_VimEnter = v:false
   endif
   if g:devotion#IsTargetFile()
-    call g:devotion#view_timer_.RestartIfNeeded()
-    call g:devotion#edit_timer_.RestartIfNeeded()
+    call s:view_timer.RestartIfNeeded()
+    call s:edit_timer.RestartIfNeeded()
   endif
 endfunction
 
 function! g:devotion#VimEnter() abort
   call g:devotion#log#LogAutocmdEvent('VimEnter   ')
-  call g:devotion#vim_timer_.Initialize('Vim')
-  call g:devotion#vim_timer_.Start()
+  call s:vim_timer.Initialize('Vim')
+  call s:vim_timer.Start()
   let s:just_after_VimEnter = v:true  " workaround
 endfunction
 
 function! g:devotion#VimLeave() abort
   call g:devotion#log#LogAutocmdEvent('VimLeave   ')
-  call g:devotion#vim_timer_.Stop()
-  call g:devotion#log#LogElapsedTime(g:devotion#vim_timer_)
-  call g:devotion#vim_timer_.Clear()
+  call s:vim_timer.Stop()
+  call g:devotion#log#LogElapsedTime(s:vim_timer)
+  call s:vim_timer.Clear()
 endfunction
