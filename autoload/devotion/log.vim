@@ -193,7 +193,7 @@ endfunction
 function! g:devotion#log#LogAutocmdEvent(event) abort
   if g:devotion#debug_enabled
     let l:data = a:event
-    let l:data .= ' ' . s:GetDateTimeStr()
+    let l:data .= ' ' . <SID>GetDateTimeStr()
     let l:data .= ' ' . g:devotion#GetEventBufferFileName()
     call writefile([l:data], g:devotion#debug_file, 'a')
   endif
