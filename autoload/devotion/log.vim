@@ -53,8 +53,8 @@ function! g:devotion#log#LogElapsedTime(timer) abort
     let l:data = {
           \ 't':  l:timestamp,
           \ 'e':  a:timer.GetElapsedTime(),
-          \ 'tt':  a:timer.GetTimerType(),
-          \ 'ft': devotion#GetEventBufferFileType(),
+          \ 'tt': a:timer.GetTimerType(),
+          \ 'ft': g:devotion#GetEventBufferFileType(),
           \ 'f':  a:timer.GetFileName(),
           \}
     let l:split_file = g:devotion#log_file . '_' . l:timestamp[0:5]

@@ -31,8 +31,8 @@ function! g:devotion#GetEventBufType() abort
 endfunction
 
 function! g:devotion#IsTargetFile() abort
-  let l:bt = devotion#GetEventBufType()
-  let l:ft = devotion#GetEventBufferFileType()
+  let l:bt = g:devotion#GetEventBufType()
+  let l:ft = g:devotion#GetEventBufferFileType()
   if (empty(l:bt) || (l:bt ==# 'help')) && ((l:ft ==# 'vim') || (l:ft ==# 'help'))
     return v:true
   else

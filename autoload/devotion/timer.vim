@@ -137,7 +137,7 @@ function! g:devotion#timer#Timer.CalcAndAddElapsedTime_() abort
 endfunction
 
 function! g:devotion#timer#Timer.IsSameFileName() abort
-  if !empty(self.file_name) && (self.file_name ==# devotion#GetEventBufferFileName())
+  if !empty(self.file_name) && (self.file_name ==# g:devotion#GetEventBufferFileName())
     return v:true
   elseif (self.timer_type ==# 'vim') && (self.file_name ==# 'Vim')
     return v:true
