@@ -4,7 +4,7 @@ let s:assert = themis#helper('assert')
 let s:ERR_VALUE = 0.2 | lockvar s:ERR_VALUE
 
 function! s:initialize_test() abort
-  let l:timer = g:devotion#timer#Timer.New('foobar')
+  let l:timer = g:devotion#timer#Timer.New('test')
   call l:timer.Initialize(fnamemodify('test/timer.vim', ':p'))
   return l:timer
 endfunction
